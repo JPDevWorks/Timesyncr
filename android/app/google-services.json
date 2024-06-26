@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "958856146906",
+    "project_id": "timesyncr",
+    "storage_bucket": "timesyncr.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:958856146906:android:2a7d63a682ffda15421ae3",
+        "android_client_info": {
+          "package_name": "com.jpdevworks.timesyncr"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "958856146906-9fsqe8kb2pf640qkv8fsp3pgcmk33ci9.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.jpdevworks.timesyncr",
+            "certificate_hash": "a832f679346507832619f218caf19f225ae4ff49"
+          }
+        },
+        {
+          "client_id": "958856146906-0hrmpsgslpqre28btrcbvs2lu5crjv48.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCDJ2CxMqbUbr7vk7GWQzpFSaA1bF-mCV4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "958856146906-0hrmpsgslpqre28btrcbvs2lu5crjv48.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "958856146906-4q9rkfqfvu629pt32276557c1cl7i3eq.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.jpdevworks.timesyncr"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
