@@ -6,8 +6,8 @@ import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:timesyncr/Home.dart';
 import 'package:timesyncr/ViewEvent.dart';
-import 'package:timesyncr/controller/task_controller.dart';
-import 'package:timesyncr/models/Event.dart';
+import 'package:timesyncr/controller/newtask_controller.dart';
+import 'package:timesyncr/models/NewEvent.dart';
 import 'package:timesyncr/them_controler.dart';
 
 class ViewSomeEvents extends StatefulWidget {
@@ -20,7 +20,7 @@ class ViewSomeEvents extends StatefulWidget {
 }
 
 class _viewsomeevents extends State<ViewSomeEvents> {
-  final TaskController task = Get.put(TaskController());
+  final NewTaskController task = Get.put(NewTaskController());
   final Random random = Random();
   final ThemeController _themeController = Get.find<ThemeController>();
 
@@ -46,7 +46,7 @@ class _viewsomeevents extends State<ViewSomeEvents> {
                 CrossAxisAlignment.stretch, // Make buttons full-width
             children: [
               Text(
-                event.eventName.toString().toUpperCase(),
+                event.title.toString().toUpperCase(),
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                   fontSize: 20,
@@ -82,13 +82,19 @@ class _viewsomeevents extends State<ViewSomeEvents> {
                   );
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
+                  backgroundColor: _themeController.isDarkTheme.value
+                      ? Colors.white
+                      : Colors.black,
                   minimumSize: const Size(double.infinity,
                       50), // Full-width button with fixed height
                 ),
-                child: const Text(
+                child: Text(
                   'View Event Details',
-                  style: TextStyle(color: Colors.black),
+                  style: TextStyle(
+                    color: _themeController.isDarkTheme.value
+                        ? Colors.black
+                        : Colors.white,
+                  ),
                 ),
               ),
             ],
@@ -104,8 +110,8 @@ class _viewsomeevents extends State<ViewSomeEvents> {
       appBar: AppBar(
         title: const Text('Date Events'),
         backgroundColor: _themeController.isDarkTheme.value
-            ? Color(0xFF0D6E6E)
-            : Color(0xFFFF3D3D),
+            ? Colors.black // Color(0xFF0D6E6E)
+            : Colors.white, //Color(0xFFFF3D3D),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
@@ -165,7 +171,7 @@ class _viewsomeevents extends State<ViewSomeEvents> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      event.eventName.toString().toUpperCase(),
+                                      event.title.toString().toUpperCase(),
                                       style: TextStyle(
                                         fontSize: 20,
                                         fontWeight: FontWeight.bold,
@@ -182,7 +188,7 @@ class _viewsomeevents extends State<ViewSomeEvents> {
                                       children: [
                                         Expanded(
                                           child: Text(
-                                            event.eventDescription.toString(),
+                                            event.notes.toString(),
                                             style: TextStyle(
                                               fontSize: 16,
                                               color: _themeController

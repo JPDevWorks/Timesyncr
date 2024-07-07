@@ -8,7 +8,7 @@ import 'package:sqflite/sqflite.dart';
 import 'package:flutter/material.dart';
 import 'package:timesyncr/models/Event.dart';
 import 'package:timesyncr/models/user.dart';
-import 'package:timesyncr/service/Notification.dart'; // For JSON encoding/decoding
+import 'package:timesyncr/service/Notification.dart'; 
 
 class DatabaseService {
   static const int _version = 1;
@@ -238,10 +238,9 @@ class DatabaseService {
 
   static Future<int> insertEvent(Event event) async {
     DateTime dateTime = parseDateTime(event.startDate, event.startTime);
-    if (event.repeat == 'None') {
-      event.repeat = "from_date_to_date";
+    if (event.startDate != event.endDate) {
+      event.repeat = "bettween";
     }
-    
     final db = await getdb();
     int id = await db.insert(
       'events',
@@ -286,15 +285,15 @@ class DatabaseService {
             event.eventName.toString(), event.eventDescription.toString());
       }
     }
-
-    // Return the ID of the inserted event
     return id;
   }
 
   static Future<int> insertchildEvent(Event event) async {
-    final db = await getdb();
 
-    // Check if event with same ID exists in the database
+    if (event.startDate != event.endDate) {
+      event.repeat = "bettween";
+    }
+    final db = await getdb();
     List<Map<String, dynamic>> existingEvent = await db.query(
       'events',
       where: 'id = ?',

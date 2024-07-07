@@ -1,5 +1,7 @@
+import 'package:country_code_picker/country_code_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:timesyncr/Home.dart'; // Import the homepage
 import 'package:timesyncr/Formheader.dart';
 import 'package:timesyncr/database/database_service.dart';
@@ -23,17 +25,17 @@ class _SignUpScreenState extends State<SignUpScreen> {
         body: SingleChildScrollView(
           child: Container(
             padding: const EdgeInsets.all(20.0),
-            child: const Column(
+            child: Column(
               children: [
-                FormHeaderWidget(
+                const FormHeaderWidget(
                   image: 'assets/timesyncr_512px.png',
                   heightBetween: 35,
                   title: 'Sign Up',
                   subTitle: 'Create a new account',
                   imageHeight: 0.12,
                 ),
-                SignUpFormWidget(),
-                SignUpFooterWidget(),
+                const SignUpFormWidget(),
+                const SignUpFooterWidget(),
               ],
             ),
           ),
@@ -64,7 +66,8 @@ class _SignUpFormWidgetState extends State<SignUpFormWidget> {
   TextEditingController phonecontroller = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
-  registration() async {
+  Future<void> registration() async {
+    showLoadingDialog(); // Show loading dialog
     try {
       UserCredential userCredential = await FirebaseAuth.instance
           .createUserWithEmailAndPassword(email: email, password: password);
@@ -131,6 +134,8 @@ class _SignUpFormWidgetState extends State<SignUpFormWidget> {
           ),
         ),
       );
+    } finally {
+      Navigator.pop(context); // Hide loading dialog
     }
   }
 
@@ -156,6 +161,28 @@ class _SignUpFormWidgetState extends State<SignUpFormWidget> {
     return null;
   }
 
+  void showLoadingDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return Dialog(
+          child: Container(
+            padding: EdgeInsets.all(20),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircularProgressIndicator(),
+                SizedBox(width: 20),
+                Text("Loading..."),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -176,6 +203,7 @@ class _SignUpFormWidgetState extends State<SignUpFormWidget> {
               decoration: const InputDecoration(
                 label: Text('Full Name'),
                 prefixIcon: Icon(Icons.person_outline_rounded),
+                border: OutlineInputBorder(), // Add border
               ),
             ),
             const SizedBox(height: 20.0),
@@ -185,32 +213,23 @@ class _SignUpFormWidgetState extends State<SignUpFormWidget> {
               decoration: const InputDecoration(
                 label: Text('Email'),
                 prefixIcon: Icon(Icons.email_outlined),
+                border: OutlineInputBorder(), // Add border
               ),
             ),
             const SizedBox(height: 20.0),
             Row(
               children: [
-                Expanded(
-                  flex: 2,
-                  child: DropdownButtonFormField<String>(
-                    value: countryCode,
-                    onChanged: (String? newValue) {
-                      setState(() {
-                        countryCode = newValue!;
-                      });
-                    },
-                    items: <String>['+1', '+44', '+91', '+61', '+81']
-                        .map<DropdownMenuItem<String>>((String value) {
-                      return DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(value),
-                      );
-                    }).toList(),
-                    decoration: const InputDecoration(
-                      labelText: '',
-                      prefixIcon: Icon(Icons.flag),
-                    ),
-                  ),
+                CountryCodePicker(
+                  onChanged: (country) {
+                    setState(() {
+                      countryCode = country.dialCode!;
+                    });
+                  },
+                  initialSelection: 'IN',
+                  favorite: ['+91', 'IN'],
+                  showCountryOnly: false,
+                  showOnlyCountryWhenClosed: false,
+                  alignLeft: false,
                 ),
                 const SizedBox(width: 10.0),
                 Expanded(
@@ -221,6 +240,7 @@ class _SignUpFormWidgetState extends State<SignUpFormWidget> {
                     decoration: const InputDecoration(
                       label: Text('Phone No'),
                       prefixIcon: Icon(Icons.numbers),
+                      border: OutlineInputBorder(), // Add border
                     ),
                   ),
                 ),
@@ -249,6 +269,7 @@ class _SignUpFormWidgetState extends State<SignUpFormWidget> {
                     });
                   },
                 ),
+                border: const OutlineInputBorder(), // Add border
               ),
             ),
             const SizedBox(height: 20.0),
@@ -285,20 +306,20 @@ class SignUpFooterWidget extends StatelessWidget {
     return Column(
       children: [
         const Text("OR"),
-        SizedBox(
-          width: double.infinity,
-          child: OutlinedButton.icon(
-            onPressed: () {
-              // Implement the sign-in with Google logic here
-            },
-            icon: const Image(
-              image: AssetImage(
-                  'assets/google.png'), // Update with the actual image path
-              width: 20.0,
-            ),
-            label: const Text('SIGN IN WITH GOOGLE'),
-          ),
-        ),
+        // SizedBox(
+        //   width: double.infinity,
+        //   child: OutlinedButton.icon(
+        //     onPressed: () {
+        //       // Implement the sign-in with Google logic here
+        //     },
+        //     icon: const Image(
+        //       image: AssetImage(
+        //           'assets/google.png'), // Update with the actual image path
+        //       width: 20.0,
+        //     ),
+        //     label: const Text('SIGN IN WITH GOOGLE'),
+        //   ),
+        // ),
         TextButton(
           onPressed: () {
             Navigator.pushNamed(context, '/login');

@@ -2,15 +2,18 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:timesyncr/Addevent.dart';
+import 'package:timesyncr/database/database.dart';
 import 'package:workmanager/workmanager.dart';
 import 'Home.dart';
 import 'Profile.dart';
 import 'Settings.dart';
-import 'controller/task_controller.dart';
+
 import 'database/database_service.dart';
 import 'forgotpassword.dart';
 import 'loginscreen.dart';
 import 'models/user.dart';
+import 'Addevent.dart';
 import 'service/Notification.dart';
 import 'singupscreen.dart';
 import 'splash.dart';
@@ -24,7 +27,8 @@ void main() async {
   NotificationService().initializeTimeZone();
   NotificationService.initialize();
   NotificationService().getPendingNotificationDetails();
-  await DatabaseService.getdb();
+  //await DatabaseService.getdb();
+  await Databasee.getdb();
 
   String initialRoute = await getInitialRoute();
   String email = await getIntialemail();
@@ -33,13 +37,10 @@ void main() async {
     callbackDispatcher,
     isInDebugMode: true,
   );
-  DateTime now = DateTime.now();
-  DateTime nextRunTime = DateTime(now.year, now.month, now.day, 2, 10, 00);
-  if (now.isAfter(nextRunTime)) {
-    nextRunTime = nextRunTime.add(Duration(days: 1));
-  }
 
-  Duration initialDelay = nextRunTime.difference(now);
+  DateTime now = DateTime.now();
+  DateTime nextMidnight = DateTime(now.year, now.month, now.day + 1, 0, 0, 0);
+  Duration initialDelay = nextMidnight.difference(now);
   print(initialDelay);
 
   Workmanager().registerPeriodicTask(
@@ -49,6 +50,10 @@ void main() async {
     initialDelay: initialDelay,
     constraints: Constraints(
       networkType: NetworkType.not_required,
+      requiresBatteryNotLow: false,
+      requiresCharging: false,
+      requiresDeviceIdle: false,
+      requiresStorageNotLow: false,
     ),
   );
 
@@ -102,6 +107,7 @@ class MyApp extends StatelessWidget {
           GetPage(name: '/login', page: () => LoginScreen()),
           GetPage(name: '/signup', page: () => SignUpScreen()),
           GetPage(name: '/forgot', page: () => ForgetPasswordScreen()),
+          GetPage(name: '/newEvent', page: () => NewEventScreen()),
           GetPage(name: '/profile', page: () => ProfileScreen(userId: email)),
         ],
       );

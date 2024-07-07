@@ -24,9 +24,9 @@ class _LoginScreenState extends State<LoginScreen> {
         body: SingleChildScrollView(
           child: Container(
             padding: const EdgeInsets.all(20.0),
-            child: const Column(
+            child: Column(
               children: [
-                FormHeaderWidget(
+                const FormHeaderWidget(
                   image: 'assets/timesyncr_512px.png',
                   heightBetween: 50,
                   crossAxisAlignment: CrossAxisAlignment.center,
@@ -34,8 +34,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   subTitle: 'Welcome back, you\'ve been missed!',
                   imageHeight: 0.12,
                 ),
-                LoginFormWidget(),
-                LoginFooterWidget(),
+                const LoginFormWidget(),
+                const LoginFooterWidget(),
               ],
             ),
           ),
@@ -56,6 +56,7 @@ class _LoginFormWidgetState extends State<LoginFormWidget> {
   String email = "";
   String password = "";
   bool _obscureText = true;
+  bool _isLoading = false;
 
   TextEditingController emailcontroller = TextEditingController();
   TextEditingController passwordcontroller = TextEditingController();
@@ -63,6 +64,9 @@ class _LoginFormWidgetState extends State<LoginFormWidget> {
   final _formKey = GlobalKey<FormState>();
 
   userlogin() async {
+    setState(() {
+      _isLoading = true;
+    });
     try {
       await FirebaseAuth.instance
           .signInWithEmailAndPassword(email: email, password: password);
@@ -99,6 +103,10 @@ class _LoginFormWidgetState extends State<LoginFormWidget> {
           ),
         ),
       );
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 
@@ -122,6 +130,7 @@ class _LoginFormWidgetState extends State<LoginFormWidget> {
               decoration: const InputDecoration(
                 label: Text('Email'),
                 prefixIcon: Icon(Icons.email_outlined),
+                border: OutlineInputBorder(), // Add border
               ),
             ),
             const SizedBox(height: 20.0),
@@ -147,6 +156,7 @@ class _LoginFormWidgetState extends State<LoginFormWidget> {
                     });
                   },
                 ),
+                border: const OutlineInputBorder(), // Add border
               ),
             ),
             const SizedBox(height: 20.0),
@@ -172,9 +182,18 @@ class _LoginFormWidgetState extends State<LoginFormWidget> {
                     userlogin();
                   }
                 },
-                child: const Text('SIGN IN'),
+                child: _isLoading
+                    ? const SizedBox(
+                        height: 20.0,
+                        width: 20.0,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2.0,
+                        ),
+                      )
+                    : const Text('SIGN IN'),
               ),
-            )
+            ),
           ],
         ),
       ),

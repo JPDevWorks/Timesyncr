@@ -60,7 +60,9 @@ class _PlanEventScreenState extends State<PlanEventScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Add Plan Event'),
-        backgroundColor: isDarkTheme ? Color(0xFF0D6E6E) : Color(0xFFFF3D3D),
+        backgroundColor: isDarkTheme
+            ? Colors.black // Color(0xFF0D6E6E)
+            : Colors.white, // Color(0xFFFF3D3D),
       ),
       body: Padding(
         padding: const EdgeInsets.all(20.0),
@@ -298,7 +300,9 @@ class _PlanEventScreenState extends State<PlanEventScreen> {
       VoidCallback onPressed) {
     return ElevatedButton(
       style: ElevatedButton.styleFrom(
-        backgroundColor: isDarkTheme ? Color(0xFF0D6E6E) : Color(0xFFFF3D3D),
+        backgroundColor: isDarkTheme
+            ? Colors.white //Color(0xFF0D6E6E)
+            : Colors.black, // Color(0xFFFF3D3D),
         foregroundColor: Colors.white,
         minimumSize: Size(150, 50),
         shape: RoundedRectangleBorder(
@@ -309,6 +313,9 @@ class _PlanEventScreenState extends State<PlanEventScreen> {
       child: Text(
         text,
         style: TextStyle(
+          color: isDarkTheme
+              ? Colors.black //Color(0xFF0D6E6E)
+              : Colors.white,
           fontSize: 20,
         ),
       ),

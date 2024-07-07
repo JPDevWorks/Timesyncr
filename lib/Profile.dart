@@ -23,6 +23,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
   Uint8List? pickedImage;
+  bool _isLoading = false;
 
   @override
   void initState() {
@@ -36,8 +37,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
     if (user != null) {
       setState(() {
         userProfile = user;
-        _nameController.text = userProfile!.name.toString();
-        _phoneController.text = userProfile!.phonenumber.toString();
+        _nameController.text = userProfile?.name ?? '';
+        _phoneController.text = userProfile?.phonenumber ?? '';
       });
     }
   }
@@ -60,8 +61,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
         AndroidUiSettings(
             toolbarTitle: 'Timesyncr',
             toolbarColor: themeController.isDarkTheme.value
-                ? Color(0xFF0D6E6E)
-                : Color(0xFFFF3D3D),
+                ? const Color(0xFF0D6E6E)
+                : const Color(0xFFFF3D3D),
             toolbarWidgetColor: Colors.white,
             initAspectRatio: CropAspectRatioPreset.original,
             lockAspectRatio: false),
@@ -84,10 +85,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Profile'),
-        backgroundColor: themeController.isDarkTheme.value
-            ? Color(0xFF0D6E6E)
-            : Color(0xFFFF3D3D),
+        title: const Text('Profile'),
+        backgroundColor:
+            themeController.isDarkTheme.value ? Colors.black : Colors.white,
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -98,12 +98,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: themeController.isDarkTheme.value
-                      ? [Color(0xFF0D6E6E), Color.fromARGB(182, 0, 0, 0)]
-                      : [Color(0xFFFF3D3D), Color.fromARGB(76, 255, 255, 255)],
+                      ? [Colors.black, Colors.black]
+                      : [Colors.white, Colors.white],
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                 ),
-                borderRadius: BorderRadius.only(
+                borderRadius: const BorderRadius.only(
                   bottomLeft: Radius.circular(30),
                   bottomRight: Radius.circular(30),
                 ),
@@ -120,7 +120,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         height: 150,
                         width: 150,
                         decoration: BoxDecoration(
-                          color: Color.fromARGB(161, 158, 158, 158),
+                          color: const Color.fromARGB(161, 158, 158, 158),
                           shape: BoxShape.circle,
                           image: pickedImage != null
                               ? DecorationImage(
@@ -138,7 +138,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         child: Center(
                           child: pickedImage == null &&
                                   userProfile?.profileImage == null
-                              ? Icon(
+                              ? const Icon(
                                   Icons.person_rounded,
                                   color: Colors.black38,
                                   size: 85,
@@ -147,7 +147,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                       ),
                     ),
-                    SizedBox(height: 10),
+                    const SizedBox(height: 10),
                     Text(
                       userProfile?.name ?? '',
                       style: TextStyle(
@@ -171,46 +171,53 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               ),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
+                  const Text(
                     'Profile Information',
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  SizedBox(height: 20),
+                  const SizedBox(height: 20),
                   _buildProfileInfoTile('Name', _nameController),
-                  SizedBox(height: 10),
+                  const SizedBox(height: 10),
                   _buildProfileInfoTile(
                     'Phone Number',
                     _phoneController,
                     keyboardType: TextInputType.phone,
                   ),
-                  SizedBox(height: 20),
+                  const SizedBox(height: 20),
                   Center(
                     child: ElevatedButton(
-                      onPressed: () {
-                        updateUserProfile();
-                      },
+                      onPressed: _isLoading ? null : () => updateUserProfile(),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: themeController.isDarkTheme.value
-                            ? Color(0xFF0D6E6E)
-                            : Color(0xFFFF3D3D),
+                            ? Colors.white
+                            : Colors.black,
                       ),
-                      child: Text(
-                        'Update Profile',
-                        style: TextStyle(
-                          color: themeController.isDarkTheme.value
-                              ? Color.fromARGB(255, 0, 0, 0)
-                              : Color.fromARGB(255, 250, 248, 248),
-                        ),
-                      ),
+                      child: _isLoading
+                          ? const SizedBox(
+                              height: 20.0,
+                              width: 20.0,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2.0,
+                              ),
+                            )
+                          : Text(
+                              'Update Profile',
+                              style: TextStyle(
+                                color: themeController.isDarkTheme.value
+                                    ? Colors.black
+                                    : Colors.white,
+                              ),
+                            ),
                     ),
                   ),
                 ],
@@ -227,52 +234,54 @@ class _ProfileScreenState extends State<ProfileScreen> {
     TextEditingController controller, {
     TextInputType? keyboardType,
   }) {
-    return Obx(() => Container(
-          padding: EdgeInsets.all(20),
-          margin: EdgeInsets.only(bottom: 10),
-          decoration: BoxDecoration(
-            color:
-                themeController.isDarkTheme.value ? Colors.black : Colors.white,
-            borderRadius: BorderRadius.circular(10),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.grey.withOpacity(0.6),
-                spreadRadius: 2,
-                blurRadius: 5,
-                offset: Offset(0, 3),
+    return Obx(
+      () => Container(
+        padding: const EdgeInsets.all(20),
+        margin: const EdgeInsets.only(bottom: 10),
+        decoration: BoxDecoration(
+          color:
+              themeController.isDarkTheme.value ? Colors.black : Colors.white,
+          borderRadius: BorderRadius.circular(10),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.6),
+              spreadRadius: 2,
+              blurRadius: 5,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: themeController.isDarkTheme.value
+                    ? Colors.white
+                    : Colors.black,
               ),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: themeController.isDarkTheme.value
-                      ? Colors.white
-                      : Colors.black,
+            ),
+            const SizedBox(height: 10),
+            TextField(
+              controller: controller,
+              keyboardType: keyboardType,
+              readOnly: title == 'Email' || title == 'Status',
+              decoration: InputDecoration(
+                hintText: 'Enter your $title',
+                border: const OutlineInputBorder(),
+                contentPadding: const EdgeInsets.symmetric(
+                  vertical: 10,
+                  horizontal: 15,
                 ),
               ),
-              SizedBox(height: 10),
-              TextField(
-                controller: controller,
-                keyboardType: keyboardType,
-                readOnly: title == 'Email' || title == 'Status',
-                decoration: InputDecoration(
-                  hintText: 'Enter your $title',
-                  border: OutlineInputBorder(),
-                  contentPadding: EdgeInsets.symmetric(
-                    vertical: 10,
-                    horizontal: 15,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ));
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   void updateUserProfile() async {
@@ -280,16 +289,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
     String newPhone = _phoneController.text.trim();
 
     if (newName.isNotEmpty && newPhone.isNotEmpty) {
+      setState(() {
+        _isLoading = true;
+      });
       try {
         await DatabaseService.updateUserDetailsByEmail(
-          email: userProfile!.email.toString(),
+          email: userProfile?.email ?? '',
           name: newName,
           phoneNumber: newPhone,
           profileImage: pickedImage,
         );
 
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Profile updated successfully')),
+          const SnackBar(content: Text('Profile updated successfully')),
         );
 
         await getUserProfile();
@@ -299,13 +311,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
           MaterialPageRoute(builder: (context) => Homepage()),
         );
       } catch (e) {
+        print(e);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error updating profile: $e')),
         );
+      } finally {
+        setState(() {
+          _isLoading = false;
+        });
       }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Name and phone cannot be empty')),
+        const SnackBar(content: Text('Name and phone cannot be empty')),
       );
     }
   }

@@ -3,8 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:intl/intl.dart';
-import 'package:timesyncr/controller/task_controller.dart';
-import 'package:timesyncr/models/Event.dart';
+import 'dart:math'; // Import for generating random numbers
+import 'package:timesyncr/controller/newtask_controller.dart';
+import 'package:timesyncr/models/NewEvent.dart';
 import 'package:timesyncr/service/Notificationwork.dart';
 import 'package:workmanager/workmanager.dart';
 
@@ -18,30 +19,25 @@ void callbackDispatcher() {
     NotificationServiceWork notificationService = NotificationServiceWork();
     await notificationService.initializeTimeZone();
 
-    final TaskController taskController = Get.put(TaskController());
-    await taskController.fetchEvents();
+    final NewTaskController taskController = Get.put(NewTaskController());
 
-    List<Event> events = taskController.events.toList();
+    DateTime selectedDate = DateTime.now();
+    await taskController.fetchdateEvents(selectedDate);
 
-    DateTime now = DateTime.now();
+    List<Event> events = taskController.dateevents.toList();
+    Random random = Random();
 
     for (Event event in events) {
       print('Event: $event');
-      if (event.repeat == 'Daily' ||
-          (event.repeat == 'Weekly' && now.weekday == DateFormat('EEEE').parse(event.startDate).weekday) ||
-          (event.repeat == 'Monthly' && now.day == DateFormat('dd-MM-yyyy').parse(event.startDate).day) ||
-          (event.repeat == 'from_date_to_date' && now.isAfter(DateFormat('dd-MM-yyyy').parse(event.startDate)) &&
-          now.isBefore(DateFormat('dd-MM-yyyy').parse(event.endDate.toString())))) {
-        List<String> timeParts = event.startTime.split(':');
-        int hour = int.parse(timeParts[0]);
-        int minute = int.parse(timeParts[1]);
-        DateTime notificationDateTime =
-        DateTime(now.year, now.month, now.day, hour, minute);
+      DateTime eventDateTime = DateFormat('dd-MM-yyyy hh:mm a')
+          .parse('${event.startDate} ${event.startTime}');
+      if (eventDateTime.isAfter(DateTime.now())) {
+        int randomId = random.nextInt(1000000000); // Generate a random ID
         notificationService.scheduleNotification(
-          event.id!,
-          notificationDateTime,
-          event.eventName!,
-          event.eventDescription!,
+          randomId,
+          eventDateTime,
+          event.title,
+          event.notes,
         );
       }
     }

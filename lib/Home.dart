@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:timesyncr/Addevent.dart';
 import 'package:timesyncr/DashBoard.dart';
 import 'package:timesyncr/EventScreen.dart';
 import 'package:timesyncr/Profile.dart';
@@ -8,7 +9,7 @@ import 'package:timesyncr/TimeTable.dart';
 import 'package:timesyncr/controller/task_controller.dart';
 import 'package:timesyncr/database/database_service.dart';
 import 'package:timesyncr/models/user.dart';
-import 'package:timesyncr/notificationscreen.dart';
+import 'package:timesyncr/notificationpage.dart';
 import 'package:timesyncr/them_controler.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -107,8 +108,8 @@ class _Home extends State<Homepage> with SingleTickerProviderStateMixin {
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
               colors: themeController.isDarkTheme.value
-                  ? [Color(0xFF0D6E6E), Colors.black]
-                  : [Color(0xFFFF3D3D), Colors.white],
+                  ? [Colors.black, Colors.black]
+                  : [Colors.white, Colors.white],
             ),
           ),
           child: GestureDetector(
@@ -130,8 +131,8 @@ class _Home extends State<Homepage> with SingleTickerProviderStateMixin {
                   },
                   child: Container(
                     color: themeController.isDarkTheme.value
-                        ? Color(0xFF0D6E6E)
-                        : Color(0xFFFF3D3D),
+                        ? Colors.black
+                        : Colors.white,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
@@ -146,17 +147,19 @@ class _Home extends State<Homepage> with SingleTickerProviderStateMixin {
                                     icon: Icon(
                                       Icons.menu,
                                       color: themeController.isDarkTheme.value
-                                          ? Colors.black
-                                          : Colors.white,
+                                          ? Colors.white
+                                          : Colors.black,
                                     ),
                                     onPressed: _toggleDrawer,
                                   ),
                                 ],
                               ),
-                              const Text(
+                              Text(
                                 'TIMESYNCR',
                                 style: TextStyle(
-                                  color: Colors.white,
+                                  color: themeController.isDarkTheme.value
+                                      ? Colors.white
+                                      : Colors.black,
                                   fontSize: 20,
                                 ),
                               ),
@@ -164,15 +167,15 @@ class _Home extends State<Homepage> with SingleTickerProviderStateMixin {
                                 icon: Icon(
                                   Icons.notifications,
                                   color: themeController.isDarkTheme.value
-                                      ? Colors.black
-                                      : Colors.white,
+                                      ? Colors.white
+                                      : Colors.black,
                                 ),
                                 onPressed: () {
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
                                       builder: (context) =>
-                                          NotificationScreen(),
+                                          PendingNotificationsPage(),
                                     ),
                                   );
                                 },
@@ -211,23 +214,22 @@ class _Home extends State<Homepage> with SingleTickerProviderStateMixin {
       floatingActionButton: Obx(() {
         return _currentPageIndex == 0
             ? Container(
-                margin: EdgeInsets.only(top: 20),
+                margin: EdgeInsets.only(top: 0),
                 child: FloatingActionButton(
                   onPressed: () {
-                    Navigator.push(
+                    Navigator.pushNamed(
                       context,
-                      MaterialPageRoute(
-                        builder: (context) => EventScreen(
-                          startTime: DateTime.now(),
-                          selectedDate: DateTime.now(),
-                        ),
-                      ),
+                      '/newEvent',
+                      arguments: {
+                        'initialStartDate': DateTime.now(),
+                        'initialStartTime': TimeOfDay.now(),
+                      },
                     );
                   },
                   child: Icon(Icons.add),
                   backgroundColor: themeController.isDarkTheme.value
-                      ? Color(0xFF0D6E6E)
-                      : Color(0xFFFF3D3D),
+                      ? Colors.grey[800] // Color(0xFF0D6E6E)
+                      : Colors.white,
                 ),
               )
             : SizedBox.shrink();
@@ -258,8 +260,8 @@ class _Home extends State<Homepage> with SingleTickerProviderStateMixin {
                 child: DrawerHeader(
                   decoration: BoxDecoration(
                     color: themeController.isDarkTheme.value
-                        ? Color(0xFF0D6E6E)
-                        : Color(0xFFFF3D3D),
+                        ? Colors.black // Color(0xFF0D6E6E)
+                        : Colors.white,
                   ),
                   child: Column(
                     children: [
@@ -294,7 +296,10 @@ class _Home extends State<Homepage> with SingleTickerProviderStateMixin {
                             ),
                           ),
                           IconButton(
-                            icon: Icon(Icons.close, color: Colors.white),
+                            icon: Icon(Icons.close,
+                                color: themeController.isDarkTheme.value
+                                    ? Colors.white
+                                    : Colors.black),
                             onPressed: _closeDrawer,
                           ),
                         ],
@@ -308,8 +313,8 @@ class _Home extends State<Homepage> with SingleTickerProviderStateMixin {
                           userProfile?.name ?? 'No Name found',
                           style: TextStyle(
                             color: themeController.isDarkTheme.value
-                                ? Colors.black
-                                : Colors.white,
+                                ? Colors.white
+                                : Colors.black,
                             fontSize: 20,
                           ),
                           overflow: TextOverflow.clip,
@@ -460,42 +465,46 @@ class CustomBottomNavigationBar extends StatelessWidget {
     final ThemeController themeController = Get.find();
     return Obx(() {
       return Container(
-        margin: const EdgeInsets.only(bottom: 15, top: 5, right: 20, left: 20),
+        margin: const EdgeInsets.only(bottom: 0, top: 0, right: 0, left: 0),
         decoration: BoxDecoration(
-          color:
-              themeController.isDarkTheme.value ? Colors.white : Colors.black,
-          borderRadius: BorderRadius.circular(40),
+          color: Colors.black, // Set background color to black
+          borderRadius: BorderRadius.circular(0),
           boxShadow: [],
         ),
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(40),
+          borderRadius: BorderRadius.circular(0),
           child: BottomNavigationBar(
             currentIndex: currentIndex,
             onTap: onTap,
             selectedItemColor: themeController.isDarkTheme.value
-                ? Color(0xFF0D6E6E)
-                : Color(0xFFFF3D3D),
-            unselectedItemColor: themeController.isDarkTheme.value
-                ? Color(0xFF0D6E6E)
-                : Color(0xFFFF3D3D),
-            backgroundColor: Colors.white,
+                ? Colors.white
+                : Colors.black, // Set selected item color to white
+            unselectedItemColor:
+                Colors.grey, // Set unselected item color to grey
+            backgroundColor: themeController.isDarkTheme.value
+                ? Colors.black
+                : Colors.white, // Ensure background color is black
             elevation: 0,
             items: [
               BottomNavigationBarItem(
                 icon: Icon(
                   Icons.dashboard,
-                  color: themeController.isDarkTheme.value
-                      ? Color(0xFF0D6E6E)
-                      : Color(0xFFFF3D3D),
+                  color: currentIndex == 0
+                      ? themeController.isDarkTheme.value
+                          ? Colors.white
+                          : Colors.black
+                      : Colors.grey,
                 ),
                 label: 'Dashboard',
               ),
               BottomNavigationBarItem(
                 icon: Icon(
                   Icons.calendar_today,
-                  color: themeController.isDarkTheme.value
-                      ? Color(0xFF0D6E6E)
-                      : Color(0xFFFF3D3D),
+                  color: currentIndex == 1
+                      ? themeController.isDarkTheme.value
+                          ? Colors.white
+                          : Colors.black
+                      : Colors.grey,
                 ),
                 label: 'TimeTable',
               ),

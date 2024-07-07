@@ -1,14 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get_storage/get_storage.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
-
 import 'package:timesyncr/ViewEvent.dart';
-import 'package:timesyncr/controller/task_controller.dart';
-import 'package:timesyncr/editevent.dart';
-import 'package:timesyncr/models/Event.dart';
+import 'package:timesyncr/models/NewEvent.dart';
 import 'package:timesyncr/them_controler.dart';
+import 'package:timesyncr/controller/newtask_controller.dart';
 
 class DashBoard extends StatefulWidget {
   int count;
@@ -19,7 +16,7 @@ class DashBoard extends StatefulWidget {
 }
 
 class _DashboardState extends State<DashBoard> {
-  final TaskController task = Get.put(TaskController());
+  final NewTaskController task = Get.put(NewTaskController());
   final ThemeController themeController = Get.put(ThemeController());
   late DateTime selectedDate = DateTime.now();
 
@@ -45,8 +42,6 @@ class _DashboardState extends State<DashBoard> {
         child: SingleChildScrollView(
           child: Column(
             children: [
-              _buildDateHeader(),
-              _buildWeeklyCalendar(),
               _buildEventList(),
             ],
           ),
@@ -55,180 +50,34 @@ class _DashboardState extends State<DashBoard> {
     );
   }
 
-  Widget _buildDateHeader() {
-    final String currentDay = DateFormat('EEEE').format(DateTime.now());
-    final String currentDate =
-        DateFormat('dd MMMM yyyy').format(DateTime.now());
-
-    return Obx(() {
-      return Container(
-        decoration: BoxDecoration(
-          color: themeController.isDarkTheme.value
-              ? Color(0xFF0D6E6E)
-              : Color(0xFFFF3D3D),
-          borderRadius: BorderRadius.circular(0),
-        ),
-        padding: const EdgeInsets.all(20.0),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '$currentDay,',
-                  style: TextStyle(
-                    fontSize: 28,
-                    color: themeController.isDarkTheme.value
-                        ? Colors.black
-                        : Colors.white,
-                  ),
-                ),
-                Container(
-                  margin: EdgeInsets.only(left: 0),
-                  child: Text(
-                    currentDate,
-                    style: TextStyle(
-                      fontSize: 22,
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            Row(
-              children: [
-                Icon(
-                  Icons.assignment,
-                  color: themeController.isDarkTheme.value
-                      ? Colors.white
-                      : Colors.black,
-                  size: 30,
-                ),
-                SizedBox(width: 5),
-                Obx(() => Text(
-                      '${task.dateevents.length} Tasks',
-                      style: TextStyle(
-                        fontSize: 20,
-                        color: themeController.isDarkTheme.value
-                            ? Colors.white
-                            : Colors.black,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    )),
-              ],
-            ),
-          ],
-        ),
-      );
-    });
-  }
-
-  Widget _buildWeeklyCalendar() {
-    DateTime now = DateTime.now();
-    int today = now.weekday;
-    DateTime firstDayOfWeek = now.subtract(Duration(days: today - 1));
-    List<DateTime> weekDays =
-        List.generate(7, (index) => firstDayOfWeek.add(Duration(days: index)));
-
-    return Obx(() {
-      return Container(
-        color: themeController.isDarkTheme.value ? Colors.black : Colors.white,
-        padding: EdgeInsets.symmetric(vertical: 10),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: weekDays.map((date) {
-            bool isSelected = date.day == selectedDate.day &&
-                date.month == selectedDate.month &&
-                date.year == selectedDate.year;
-            bool isToday = date.day == now.day &&
-                date.month == now.month &&
-                date.year == now.year;
-
-            return GestureDetector(
-              onTap: () {
-                setState(() {
-                  selectedDate = date;
-                  task.fetchdateEvents(selectedDate).then((_) {
-                    if (mounted) {
-                      setState(() {
-                        widget.count = task.dateevents.length;
-                      });
-                    }
-                  });
-                });
-              },
-              child: Column(
-                children: [
-                  Text(
-                    DateFormat('EEE').format(date),
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: isSelected
-                          ? themeController.isDarkTheme.value
-                              ? Color(0xFF0D6E6E)
-                              : Color(0xFFFF3D3D)
-                          : themeController.isDarkTheme.value
-                              ? Colors.white
-                              : Colors.black,
-                      fontWeight:
-                          isSelected ? FontWeight.bold : FontWeight.normal,
-                    ),
-                  ),
-                  SizedBox(height: 4),
-                  Text(
-                    DateFormat('d').format(date),
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: isSelected
-                          ? themeController.isDarkTheme.value
-                              ? Color(0xFF0D6E6E)
-                              : Color(0xFFFF3D3D)
-                          : themeController.isDarkTheme.value
-                              ? Colors.white
-                              : Colors.black,
-                      fontWeight:
-                          isSelected ? FontWeight.bold : FontWeight.normal,
-                    ),
-                  ),
-                  if (isToday)
-                    Container(
-                      margin: EdgeInsets.only(top: 4),
-                      width: 6,
-                      height: 6,
-                      decoration: BoxDecoration(
-                        color: themeController.isDarkTheme.value
-                            ? Color(0xFF0D6E6E)
-                            : Color(0xFFFF3D3D),
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                ],
-              ),
-            );
-          }).toList(),
-        ),
-      );
-    });
-  }
-
   Widget _buildEventList() {
-    final List<Color> colors = [
-      Color(0xFFFFF3E0),
-      Color(0xFFFFFDE7),
-      Color(0xFFE1F5FE),
-      Color(0xFFF3E5F5),
-      Color(0xFFE8F5E9),
-      Color(0xFFFFEBEE),
-      Color(0xFFFFF9C4),
-    ];
-
     return Obx(() {
+      final today = DateTime.now();
+      final todayEvents = task.dateevents.where((event) {
+        final eventDate = DateFormat('dd-MM-yyyy').parse(event.startDate);
+        return eventDate.isSameDay(today) || shouldRepeatToday(event, today);
+      }).toList();
+
+      final upcomingEvents = task.events.where((event) {
+        final eventDate = DateFormat('dd-MM-yyyy').parse(event.startDate);
+        return eventDate.isAfter(today);
+      }).toList()
+        ..sort((a, b) {
+          final dateA = DateFormat('dd-MM-yyyy').parse(a.startDate);
+          final dateB = DateFormat('dd-MM-yyyy').parse(b.startDate);
+          return dateA.compareTo(dateB);
+        });
+
+      // Sort events by start time
+      todayEvents.sort((a, b) => _compareStartTime(a.startTime, b.startTime));
+
+      // Group upcoming events by date
+      final groupedEvents = _groupEventsByDate(upcomingEvents);
+
       return Container(
         color: themeController.isDarkTheme.value ? Colors.black : Colors.white,
         padding: const EdgeInsets.all(15.0),
-        child: task.dateevents.isEmpty
+        child: todayEvents.isEmpty && upcomingEvents.isEmpty
             ? Center(
                 child: Text(
                   'No events found.',
@@ -239,377 +88,296 @@ class _DashboardState extends State<DashBoard> {
                   ),
                 ),
               )
-            : ListView.builder(
-                physics: NeverScrollableScrollPhysics(),
-                shrinkWrap: true,
-                itemCount: task.dateevents.length,
-                itemBuilder: (context, index) {
-                  final event = task.dateevents[index];
-                  Color color = Color(event.color!);
-                  return GestureDetector(
-                    // onTap: () => _showBottomSheet(context, event, color),
-                    child: _buildEventCard(event, index),
-                  );
-                },
+            : Column(
+                children: [
+                  SizedBox(height: 10),
+                  _buildDateAndEvents(today, todayEvents),
+                  Divider(
+                    color: themeController.isDarkTheme.value
+                        ? Colors.white
+                        : Colors.black,
+                    thickness: 1,
+                  ),
+                  for (final date in groupedEvents.keys) ...[
+                    _buildDateAndEvents(date, groupedEvents[date]!),
+                    Divider(
+                      color: themeController.isDarkTheme.value
+                          ? Colors.white
+                          : Colors.black,
+                      thickness: 1,
+                    ),
+                  ],
+                ],
               ),
       );
     });
   }
 
-  Widget _buildEventCard(Event event, int index) {
-    final startTime = DateFormat('hh:mm a').parse(event.startTime);
-    final endTime = DateFormat('hh:mm a').parse(event.endTime);
-    final duration = endTime.difference(startTime);
-    final durationText =
-        "${duration.inHours}h ${duration.inMinutes.remainder(60)}m";
+  Map<DateTime, List<Event>> _groupEventsByDate(List<Event> events) {
+    final Map<DateTime, List<Event>> groupedEvents = {};
+    final dateFormat = DateFormat('dd-MM-yyyy');
 
+    for (final event in events) {
+      final eventDate = dateFormat.parse(event.startDate);
+      final normalizedDate = DateTime.utc(
+        eventDate.year,
+        eventDate.month,
+        eventDate.day,
+      );
+
+      if (!groupedEvents.containsKey(normalizedDate)) {
+        groupedEvents[normalizedDate] = [];
+      }
+
+      groupedEvents[normalizedDate]!.add(event);
+    }
+
+    return groupedEvents;
+  }
+
+  int _compareStartTime(String startTimeA, String startTimeB) {
+    final timeFormat = DateFormat('hh:mm a');
+    final timeA = timeFormat.parse(startTimeA);
+    final timeB = timeFormat.parse(startTimeB);
+    return timeA.compareTo(timeB);
+  }
+
+  bool shouldRepeatToday(Event event, DateTime today) {
     final eventDate = DateFormat('dd-MM-yyyy').parse(event.startDate);
+    final nowDate =
+        DateFormat('dd-MM-yyyy').parse(DateFormat('dd-MM-yyyy').format(today));
 
-    final currentDate = DateTime.now();
-    final isToday = selectedDate.year == currentDate.year &&
-        selectedDate.month == currentDate.month &&
-        selectedDate.day == currentDate.day;
+    if (nowDate.isAfter(eventDate)) {
+      if (event.repetitiveEvent == 'Daily') {
+        return true;
+      } else if (event.repetitiveEvent == 'Weekly') {
+        return eventDate.weekday == today.weekday;
+      } else if (event.repetitiveEvent == 'Monthly') {
+        return eventDate.day == today.day;
+      }
+    }
 
-    Color color = Color(event.color!);
+    return false;
+  }
 
-    return Container(
-      height: 170,
-      margin: EdgeInsets.symmetric(vertical: 8),
-      child: Card(
-        elevation: 2,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12.0),
-        ),
-        child: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.centerLeft,
-              end: Alignment.centerRight,
-              colors: [
-                color,
-                themeController.isDarkTheme.value ? Colors.black : Colors.white,
-              ],
-            ),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(15.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  event.eventName.toString().toUpperCase(),
-                  style: GoogleFonts.aDLaMDisplay(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
+  Widget _buildDateAndEvents(DateTime date, List<Event> events) {
+    final isToday = date.isSameDay(DateTime.now());
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 5.0),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Column(
+                children: [
+                  SizedBox(
+                    height: 20,
                   ),
-                ),
-                SizedBox(height: 1),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      "${event.startDate.toString()}",
-                      style: TextStyle(
-                          fontSize: 15,
-                          color: themeController.isDarkTheme.value
+                  Container(
+                    width: 65, // Fixed width for alignment
+                    height: isToday ? 70 : 50,
+                    decoration: BoxDecoration(
+                      color: isToday
+                          ? themeController.isDarkTheme.value
                               ? Colors.white
-                              : Colors.black),
+                              : Colors.black
+                          : Colors.grey,
+                      shape: BoxShape.circle,
                     ),
-                    SizedBox(
-                      width: 10,
-                    ),
-                    // Text(
-                    //   "${event.endDate.toString()}",
-                    //   style: TextStyle(
-                    //       fontSize: 15,
-                    //       color: themeController.isDarkTheme.value
-                    //           ? Colors.white
-                    //           : Colors.black),
-                    // ),
-                  ],
-                ),
-                SizedBox(height: 3),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    alignment: Alignment.center,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Container(
-                          child: Text(
-                            event.startTime,
-                            style: TextStyle(
-                                fontSize: 14,
-                                color: themeController.isDarkTheme.value
-                                    ? Colors.white
-                                    : Colors.black),
-                          ),
-                        ),
-                        SizedBox(width: 10),
                         Text(
-                          "-",
+                          DateFormat('dd').format(date),
                           style: TextStyle(
-                            color: Colors.black,
+                            fontSize: isToday ? 30 : 22,
+                            fontWeight: FontWeight.bold,
+                            color: isToday
+                                ? themeController.isDarkTheme.value
+                                    ? Colors.black
+                                    : Colors.white
+                                : Colors.white,
                           ),
                         ),
-                        SizedBox(width: 10),
-                        Container(
-                          child: Text(
-                            event.endTime,
-                            style: TextStyle(
-                                fontSize: 14,
-                                color: themeController.isDarkTheme.value
-                                    ? Colors.white
-                                    : Colors.black),
+                        Text(
+                          DateFormat('MMM').format(date),
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: isToday
+                                ? themeController.isDarkTheme.value
+                                    ? Colors.black
+                                    : Colors.white
+                                : Colors.white,
                           ),
                         ),
                       ],
                     ),
-                  ],
-                ),
-                SizedBox(height: 6),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                  ),
+                  SizedBox(
+                    height: 1,
+                  ),
+                ],
+              ),
+              SizedBox(width: 1), // Adjusted space for alignment
+              Expanded(
+                child: Column(
+                  children: events.map((event) {
+                    return Column(
                       children: [
-                        ElevatedButton(
-                          onPressed: () {
-                            Navigator.pop(context);
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => EditEvent(
-                                  event: event,
-                                  selectedDate: DateFormat('dd-MM-yyyy')
-                                      .parse(event.startDate),
-                                  startTime: DateFormat('hh:mm a')
-                                      .parse(event.startTime),
-                                  endTime: DateFormat('hh:mm a')
-                                      .parse(event.endTime),
-                                  endDate: DateFormat('dd-MM-yyyy')
-                                      .parse(event.endDate!),
-                                ),
-                              ),
-                            );
-                          },
-                          style: ElevatedButton.styleFrom(
-                            padding: EdgeInsets.all(10),
-                            foregroundColor: themeController.isDarkTheme.value
-                                ? Color(0xFF0D6E6E)
-                                : Color(0xFFFF3D3D),
-                            backgroundColor: themeController.isDarkTheme.value
-                                ? Colors.black
-                                : Colors.white,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(30),
-                            ),
+                        if (events.indexOf(event) != 0)
+                          Divider(
+                            color: themeController.isDarkTheme.value
+                                ? Colors.transparent
+                                : Colors.transparent,
+                            thickness: 0,
                           ),
-                          child: Text(
-                            "Postpone",
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: themeController.isDarkTheme.value
-                                  ? Colors.white
-                                  : Colors.black,
-                            ),
-                          ),
-                        ),
-                        SizedBox(width: 20),
-                        ElevatedButton(
-                          onPressed: () {
-                            setState(() {
-                              task.updateeventdone(event);
-                            });
-                          },
-                          style: ElevatedButton.styleFrom(
-                            padding: EdgeInsets.all(10),
-                            backgroundColor: themeController.isDarkTheme.value
-                                ? Colors.black
-                                : Colors.white,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(30),
-                            ),
-                          ),
-                          child: Row(
-                            children: [
-                              Text(
-                                event.isCompleted == 0 ? "Done" : "Completed",
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: themeController.isDarkTheme.value
-                                      ? Colors.white
-                                      : Colors.black,
-                                ),
-                              ),
-                              SizedBox(width: 4),
-                              Icon(
-                                Icons.check,
-                                size: 16,
-                                color: themeController.isDarkTheme.value
-                                    ? Colors.white
-                                    : Colors.black,
-                              ),
-                            ],
-                          ),
-                        ),
+                        _buildEventDetails(event),
                       ],
-                    ),
-                    Container(
-                      padding: EdgeInsets.all(2),
-                      decoration: BoxDecoration(
+                    );
+                  }).toList(),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildEventDetails(Event event) {
+    Color color = Color(event.color!);
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 0.0),
+      child: Container(
+        margin: EdgeInsets.only(left: 20),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Text(
+                        event.startTime,
+                        style: TextStyle(
+                          fontSize: 14,
                           color: themeController.isDarkTheme.value
                               ? Colors.white
                               : Colors.black,
-                          borderRadius: BorderRadius.circular(30)),
-                      child: IconButton(
-                          icon: Icon(
-                            Icons.north_east,
+                        ),
+                      ),
+                      SizedBox(width: 10),
+                      Text(
+                        "-",
+                        style: TextStyle(
+                          color: themeController.isDarkTheme.value
+                              ? Colors.white
+                              : Colors.black,
+                        ),
+                      ),
+                      SizedBox(width: 10),
+                      Text(
+                        event.endTime,
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: themeController.isDarkTheme.value
+                              ? Colors.white
+                              : Colors.black,
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 3),
+                  Row(
+                    children: [
+                      Text(
+                        event.title,
+                        style: GoogleFonts.aDLaMDisplay(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: themeController.isDarkTheme.value
+                              ? Colors.white
+                              : Colors.black,
+                        ),
+                      ),
+                      SizedBox(
+                        width: 5,
+                      ),
+                      if (event.planevent == "Yes")
+                        Text(
+                          "(Prep)",
+                          style: GoogleFonts.aDLaMDisplay(
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
                             color: themeController.isDarkTheme.value
-                                ? Colors.black
-                                : Colors.white,
+                                ? Colors.white
+                                : Colors.black,
                           ),
-                          onPressed: () => {
-                                Navigator.pop(context),
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) =>
-                                        ViewEvent(event: event, color: color),
-                                  ),
-                                )
-                              }
-                          //_showBottomSheet(context, event, color),
-                          ),
+                        ),
+                      SizedBox(
+                        width: 5,
+                      ),
+                      if (event.isAllDayEvent)
+                        Icon(
+                          Icons.star,
+                          size: 20,
+                          color: themeController.isDarkTheme.value
+                              ? Colors.red
+                              : Colors.red,
+                        ),
+                    ],
+                  ),
+                  SizedBox(height: 6),
+                  Container(
+                    padding: EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                    decoration: BoxDecoration(
+                      color: color,
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                  ],
-                ),
-              ],
+                    child: Text(
+                      event.selectedTag,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.black,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
+            IconButton(
+              icon: Icon(
+                Icons.arrow_forward,
+                color: themeController.isDarkTheme.value
+                    ? Colors.white
+                    : Colors.black,
+              ),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ViewEvent(event: event, color: color),
+                  ),
+                );
+              },
+            ),
+          ],
         ),
       ),
     );
   }
+}
 
-  void _showBottomSheet(BuildContext context, Event event, Color color) {
-    DateTime eventStartDateTime = DateFormat('dd-MM-yyyy hh:mm a')
-        .parse('${event.startDate} ${event.startTime}');
-    bool canEditEvent = eventStartDateTime.isAfter(DateTime.now());
-
-    showModalBottomSheet(
-      context: context,
-      builder: (context) {
-        return Container(
-          padding: EdgeInsets.all(20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Text(
-                event.eventName.toString().toUpperCase(),
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: () {
-                  task.deleteEvent(event);
-                  Navigator.pop(context);
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: themeController.isDarkTheme.value
-                      ? Color(0xFF0D6E6E)
-                      : Color(0xFFFF3D3D),
-                  foregroundColor: themeController.isDarkTheme.value
-                      ? Color.fromARGB(255, 60, 188, 188)
-                      : Color.fromARGB(255, 179, 80, 80),
-                ),
-                child: Text(
-                  'Delete Event',
-                  style: TextStyle(
-                    color: themeController.isDarkTheme.value
-                        ? Colors.white
-                        : Colors.black,
-                  ),
-                ),
-              ),
-              SizedBox(height: 10),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) =>
-                          ViewEvent(event: event, color: color),
-                    ),
-                  );
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: themeController.isDarkTheme.value
-                      ? Color(0xFF0D6E6E)
-                      : Color(0xFFFF3D3D),
-                  foregroundColor: themeController.isDarkTheme.value
-                      ? Color.fromARGB(255, 60, 188, 188)
-                      : Color.fromARGB(255, 179, 80, 80),
-                ),
-                child: Text(
-                  'View Event Details',
-                  style: TextStyle(
-                    color: themeController.isDarkTheme.value
-                        ? Colors.white
-                        : Colors.black,
-                  ),
-                ),
-              ),
-              SizedBox(height: 10),
-              if (canEditEvent)
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => EditEvent(
-                          event: event,
-                          selectedDate:
-                              DateFormat('dd-MM-yyyy').parse(event.startDate),
-                          startTime:
-                              DateFormat('hh:mm a').parse(event.startTime),
-                          endTime: DateFormat('hh:mm a').parse(event.endTime),
-                          endDate:
-                              DateFormat('dd-MM-yyyy').parse(event.endDate!),
-                        ),
-                      ),
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: themeController.isDarkTheme.value
-                        ? Color(0xFF0D6E6E)
-                        : Color(0xFFFF3D3D),
-                    foregroundColor: themeController.isDarkTheme.value
-                        ? Color.fromARGB(255, 60, 188, 188)
-                        : Color.fromARGB(255, 179, 80, 80),
-                  ),
-                  child: Text(
-                    'Edit Event Details',
-                    style: TextStyle(
-                      color: themeController.isDarkTheme.value
-                          ? Colors.white
-                          : Colors.black,
-                    ),
-                  ),
-                ),
-            ],
-          ),
-        );
-      },
-    );
+extension DateTimeExtension on DateTime {
+  bool isSameDay(DateTime other) {
+    return this.year == other.year &&
+        this.month == other.month &&
+        this.day == other.day;
   }
 }

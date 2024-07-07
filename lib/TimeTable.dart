@@ -3,10 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:syncfusion_flutter_calendar/calendar.dart';
-import 'package:timesyncr/EventScreen.dart';
+import 'package:table_calendar/table_calendar.dart';
+import 'package:timesyncr/Addevent.dart';
+
+import 'package:timesyncr/TimeTable/Day.dart';
+import 'package:timesyncr/TimeTable/Month.dart';
+import 'package:timesyncr/TimeTable/Week.dart';
 import 'package:timesyncr/ViewSomeEvents.dart';
 import 'package:timesyncr/models/Event.dart';
-import 'package:timesyncr/controller/task_controller.dart';
+import 'package:timesyncr/controller/newtask_controller.dart';
 import 'package:timesyncr/them_controler.dart';
 
 class TimeTable extends StatefulWidget {
@@ -17,10 +22,10 @@ class TimeTable extends StatefulWidget {
 }
 
 class _TimeTableState extends State<TimeTable> {
-  int _selectedIndex = 1;
-  final PageController _pageController = PageController(initialPage: 1);
+  int _selectedIndex = 0;
+  final PageController _pageController = PageController(initialPage: 0);
   final CalendarController _calendarController = CalendarController();
-  final TaskController _taskController = Get.put(TaskController());
+  final NewTaskController _taskController = Get.put(NewTaskController());
   late ThemeController _themeController;
 
   @override
@@ -67,14 +72,14 @@ class _TimeTableState extends State<TimeTable> {
                   "Add Event",
                   () {
                     Navigator.pop(context);
-                    Navigator.push(
+                    Navigator.pushNamed(
                       context,
-                      MaterialPageRoute(
-                        builder: (context) => EventScreen(
-                          selectedDate: selectedDate,
-                          startTime: selectedDate,
-                        ),
-                      ),
+                      '/newEvent',
+                      arguments: {
+                        'initialStartDate': selectedDate,
+                        'initialStartTime':
+                            TimeOfDay.fromDateTime(selectedDate),
+                      },
                     );
                   },
                 ),
@@ -96,13 +101,18 @@ class _TimeTableState extends State<TimeTable> {
         style: ElevatedButton.styleFrom(
           padding: const EdgeInsets.symmetric(vertical: 16.0),
           backgroundColor: _themeController.isDarkTheme.value
-              ? Color(0xFF0D6E6E)
-              : Color(0xFFFF3D3D),
-          foregroundColor: Color.fromARGB(255, 8, 69, 69),
+              ? Colors.white //const Color(0xFF0D6E6E)
+              : Colors.black, //const Color(0xFFFF3D3D),
+          foregroundColor: const Color.fromARGB(255, 8, 69, 69),
         ),
         child: Text(
           text,
-          style: const TextStyle(fontSize: 16, color: Colors.white),
+          style: TextStyle(
+            fontSize: 16,
+            color: _themeController.isDarkTheme.value
+                ? Colors.black //const Color(0xFF0D6E6E)
+                : Colors.white,
+          ),
         ),
       ),
     );
@@ -111,6 +121,7 @@ class _TimeTableState extends State<TimeTable> {
   void _onMonthTapped(CalendarTapDetails details) {
     if (details.targetElement == CalendarElement.calendarCell) {
       DateTime selectedDate = details.date!;
+
       if (selectedDate.isAfter(DateTime.now()) ||
           (selectedDate.day == DateTime.now().day &&
               selectedDate.month == DateTime.now().month &&
@@ -166,7 +177,7 @@ class _TimeTableState extends State<TimeTable> {
         appointments.add(Appointment(
           startTime: startOfCurrentDay,
           endTime: endOfCurrentDay,
-          subject: event.eventName ?? '',
+          subject: event.title,
           color: color,
         ));
 
@@ -174,29 +185,29 @@ class _TimeTableState extends State<TimeTable> {
       }
 
       // Handle recurring events
-      if (event.repeat == 'Daily') {
+      if (event.repetitiveEvent == 'Daily') {
         for (int i = 1; i <= 365; i++) {
           DateTime newStartTime = startTime.add(Duration(days: i));
           DateTime newEndTime = endTime.add(Duration(days: i));
           appointments.add(Appointment(
             startTime: newStartTime,
             endTime: newEndTime,
-            subject: event.eventName ?? '',
+            subject: event.title,
             color: color,
           ));
         }
-      } else if (event.repeat == 'Weekly') {
+      } else if (event.repetitiveEvent == 'Weekly') {
         for (int i = 1; i <= 52; i++) {
           DateTime newStartTime = startTime.add(Duration(days: i * 7));
           DateTime newEndTime = endTime.add(Duration(days: i * 7));
           appointments.add(Appointment(
             startTime: newStartTime,
             endTime: newEndTime,
-            subject: event.eventName ?? '',
+            subject: event.title,
             color: color,
           ));
         }
-      } else if (event.repeat == 'Monthly') {
+      } else if (event.repetitiveEvent == 'Monthly') {
         DateTime nextMonthDate =
             DateTime(startTime.year, startTime.month + 1, startTime.day);
         int daysInNextMonth =
@@ -209,7 +220,7 @@ class _TimeTableState extends State<TimeTable> {
           appointments.add(Appointment(
             startTime: newStartTime,
             endTime: newEndTime,
-            subject: event.eventName ?? '',
+            subject: event.title,
             color: color,
           ));
         }
@@ -217,22 +228,6 @@ class _TimeTableState extends State<TimeTable> {
     }
 
     return AppointmentDataSource(appointments);
-  }
-
-  Color _getRandomLightColor() {
-    final Random random = Random();
-    final List<Color> colors = [
-      Color.fromARGB(202, 76, 175, 79), // Dark green
-      Color.fromARGB(199, 63, 81, 181), // Dark blue
-      Color.fromARGB(189, 104, 58, 183), // Dark purple
-      Color.fromARGB(184, 211, 47, 47), // Dark red
-      Color.fromARGB(200, 121, 85, 72), // Brown
-      Color(0xFF607D8B), // Grayish blue
-      Color.fromARGB(210, 69, 90, 100), // Dark grayish blue
-      Color.fromARGB(217, 33, 33, 33), // Dark gray
-      Color.fromARGB(212, 0, 0, 0), // Black
-    ];
-    return colors[random.nextInt(colors.length)];
   }
 
   Widget _monthCellBuilder(BuildContext context, MonthCellDetails details) {
@@ -294,24 +289,12 @@ class _TimeTableState extends State<TimeTable> {
 
   @override
   Widget build(BuildContext context) {
-    final DateTime now = DateTime.now();
-    final DateTime startOfDay = DateTime(now.year, now.month, now.day, 6, 20);
-
     return Scaffold(
       backgroundColor:
           _themeController.isDarkTheme.value ? Colors.black : Colors.white,
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                // Add any other UI elements if needed
-              ],
-            ),
-          ),
           BottomNavigationBar(
             items: const <BottomNavigationBarItem>[
               BottomNavigationBarItem(
@@ -330,7 +313,7 @@ class _TimeTableState extends State<TimeTable> {
             currentIndex: _selectedIndex,
             selectedItemColor: _themeController.isDarkTheme.value
                 ? Colors.white
-                : Color.fromARGB(255, 0, 0, 0),
+                : const Color.fromARGB(255, 0, 0, 0),
             onTap: _onItemTapped,
           ),
           Expanded(
@@ -342,85 +325,24 @@ class _TimeTableState extends State<TimeTable> {
                 });
               },
               children: [
-                SfCalendar(
-                  view: CalendarView.month,
-                  initialSelectedDate: DateTime.now(),
-                  todayHighlightColor: _themeController.isDarkTheme.value
-                      ? Colors.white
-                      : Color.fromARGB(255, 0, 0, 0),
-                  headerStyle: CalendarHeaderStyle(
-                    textAlign: TextAlign.center,
-                    textStyle: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 25,
-                      color: _themeController.isDarkTheme.value
-                          ? Colors.white
-                          : Colors.black,
-                    ),
-                  ),
-                  dataSource: _getCalendarDataSource(),
-                  monthCellBuilder: _monthCellBuilder,
-                  onTap: _onMonthTapped,
-                  controller: _calendarController,
+                MonthView(
+                  taskController: _taskController,
+                  themeController: _themeController,
                 ),
-                SfCalendar(
-                  view: CalendarView.week,
-                  firstDayOfWeek: startOfDay.weekday,
-                  initialDisplayDate: startOfDay,
-                  todayHighlightColor: _themeController.isDarkTheme.value
-                      ? Colors.white
-                      : Color.fromARGB(255, 0, 0, 0),
-                  headerStyle: CalendarHeaderStyle(
-                    textAlign: TextAlign.center,
-                    textStyle: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 25,
-                      color: _themeController.isDarkTheme.value
-                          ? Colors.white
-                          : Colors.black,
-                    ),
-                  ),
-                  dataSource: _getCalendarDataSource(),
-                  monthCellBuilder: _monthCellBuilder,
+                WeekView(
+                  calendarController: _calendarController,
+                  taskController: _taskController,
+                  themeController: _themeController,
                   onTap: _onWeekTapped,
-                  timeSlotViewSettings: TimeSlotViewSettings(
-                    timeIntervalHeight: 50,
-                    timeTextStyle: TextStyle(
-                      fontSize: 16,
-                      color: _themeController.isDarkTheme.value
-                          ? Colors.white
-                          : Colors.black,
-                    ),
-                  ),
-                ),
-                SfCalendar(
-                  view: CalendarView.day,
-                  initialDisplayDate: startOfDay,
-                  todayHighlightColor: _themeController.isDarkTheme.value
-                      ? Colors.white
-                      : Colors.black,
-                  headerDateFormat: 'dd-MM-yy EEEE',
-                  headerHeight: 52,
-                  headerStyle: CalendarHeaderStyle(
-                    textAlign: TextAlign.center,
-                    textStyle: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 25,
-                      color: _themeController.isDarkTheme.value
-                          ? Colors.white
-                          : Colors.black,
-                    ),
-                  ),
                   dataSource: _getCalendarDataSource(),
-                  timeSlotViewSettings: TimeSlotViewSettings(
-                    timeIntervalHeight: 47,
-                    timeTextStyle: TextStyle(
-                      fontSize: 16,
-                      color: _themeController.isDarkTheme.value
-                          ? Colors.white
-                          : Colors.black,
-                    ),
-                  ),
+                  monthCellBuilder: _monthCellBuilder,
+                ),
+                DayView(
+                  calendarController: _calendarController,
+                  taskController: _taskController,
+                  themeController: _themeController,
+                  onTap: _onWeekTapped,
+                  dataSource: _getCalendarDataSource(),
                 ),
               ],
             ),

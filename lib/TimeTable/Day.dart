@@ -1,33 +1,55 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:syncfusion_flutter_calendar/calendar.dart';
+import 'package:timesyncr/TimeTable.dart';
+import 'package:timesyncr/controller/newtask_controller.dart';
+import 'package:timesyncr/them_controler.dart';
 
-class DayView extends StatefulWidget {
-  final DateTime selectedDate;
-  final Function(ViewChangedDetails) onViewChanged;
+class DayView extends StatelessWidget {
+  final CalendarController calendarController;
+  final NewTaskController taskController;
+  final ThemeController themeController;
+  final Function(CalendarTapDetails) onTap;
+  final CalendarDataSource dataSource;
 
   const DayView({
-    required this.selectedDate,
-    required this.onViewChanged,
-  });
+    Key? key,
+    required this.calendarController,
+    required this.taskController,
+    required this.themeController,
+    required this.onTap,
+    required this.dataSource,
+  }) : super(key: key);
 
-  @override
-  _DayViewState createState() => _DayViewState();
-}
-
-class _DayViewState extends State<DayView> {
   @override
   Widget build(BuildContext context) {
+    final DateTime now = DateTime.now();
+    final DateTime startOfDay = DateTime(now.year, now.month, now.day, 6, 50);
+
     return SfCalendar(
       view: CalendarView.day,
-      onViewChanged: widget.onViewChanged,
+      initialDisplayDate: startOfDay,
+      todayHighlightColor:
+          themeController.isDarkTheme.value ? Colors.white : Colors.black,
+      headerDateFormat: 'dd-MM-yy EEEE',
+      headerHeight: 52,
       headerStyle: CalendarHeaderStyle(
-        backgroundColor: Color(0xff2dd4bf),
+        textAlign: TextAlign.center,
+        textStyle: TextStyle(
+          fontWeight: FontWeight.bold,
+          fontSize: 25,
+          color:
+              themeController.isDarkTheme.value ? Colors.white : Colors.black,
+        ),
       ),
-      todayHighlightColor: Color(0xff0f766e),
-      selectionDecoration: BoxDecoration(
-        color: Colors.blue.withOpacity(0.3),
-        border: Border.all(color: Colors.blue, width: 2),
-        borderRadius: BorderRadius.all(Radius.circular(4)),
+      dataSource: dataSource,
+      timeSlotViewSettings: TimeSlotViewSettings(
+        timeIntervalHeight: 55,
+        timeTextStyle: TextStyle(
+          fontSize: 16,
+          color:
+              themeController.isDarkTheme.value ? Colors.white : Colors.black,
+        ),
       ),
     );
   }

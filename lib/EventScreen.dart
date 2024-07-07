@@ -93,12 +93,13 @@ class _EventScreenState extends State<EventScreen> {
     final isDarkTheme = _themeController.isDarkTheme;
     return Scaffold(
       appBar: AppBar(
-        title: Text('Add Event'),
-        backgroundColor:
-            isDarkTheme.value ? Color(0xFF0D6E6E) : Color(0xFFFF3D3D),
-      ),
+          title: Text('Add Event'),
+          backgroundColor: isDarkTheme.value
+              ? Colors.black
+              : Colors.white //Color(0xFFFF3D3D),
+          ),
       body: Container(
-        padding: const EdgeInsets.only(left: 20, right: 20),
+        padding: const EdgeInsets.only(left: 10, right: 10),
         child: SingleChildScrollView(
           child: Column(
             children: [
@@ -125,12 +126,11 @@ class _EventScreenState extends State<EventScreen> {
                         onPressed: () {
                           _getDateFromUser(isend: false);
                         },
-                        icon: Icon(
-                          Icons.calendar_month_outlined,
-                          color: isDarkTheme.value
-                              ? Color(0xFF0D6E6E)
-                              : Color(0xFFFF3D3D),
-                        ),
+                        icon: Icon(Icons.calendar_month_outlined,
+                            color: isDarkTheme.value
+                                ? Colors.white //Color(0xFF0D6E6E)
+                                : Colors.black //Color(0xFFFF3D3D),
+                            ),
                       ),
                     ),
                   ),
@@ -139,19 +139,18 @@ class _EventScreenState extends State<EventScreen> {
                   ),
                   Expanded(
                     child: Myinputfield(
-                      titlee: "End Date",
-                      hint: DateFormat('dd-MM-yyyy').format(end),
-                      controller: _endDateController,
+                      titlee: "Start Time",
+                      hint: DateFormat('hh:mm a').format(widget.startTime),
+                      controller: _startTimeController,
                       widget: IconButton(
                         onPressed: () {
-                          _getDateFromUser(isend: true);
+                          _getTimeFromUser(isStartTime: true);
                         },
-                        icon: Icon(
-                          Icons.calendar_month_outlined,
-                          color: isDarkTheme.value
-                              ? Color(0xFF0D6E6E)
-                              : Color(0xFFFF3D3D),
-                        ),
+                        icon: Icon(Icons.access_time_rounded,
+                            color: isDarkTheme.value
+                                ? Colors.white //Color(0xFF0D6E6E)
+                                : Colors.black //Color(0xFFFF3D3D),
+                            ),
                       ),
                     ),
                   ),
@@ -163,19 +162,18 @@ class _EventScreenState extends State<EventScreen> {
                 children: [
                   Expanded(
                     child: Myinputfield(
-                      titlee: "Start Time",
-                      hint: DateFormat('hh:mm a').format(widget.startTime),
-                      controller: _startTimeController,
+                      titlee: "End Date",
+                      hint: DateFormat('dd-MM-yyyy').format(end),
+                      controller: _endDateController,
                       widget: IconButton(
                         onPressed: () {
-                          _getTimeFromUser(isStartTime: true);
+                          _getDateFromUser(isend: true);
                         },
-                        icon: Icon(
-                          Icons.access_time_rounded,
-                          color: isDarkTheme.value
-                              ? Color(0xFF0D6E6E)
-                              : Color(0xFFFF3D3D),
-                        ),
+                        icon: Icon(Icons.calendar_month_outlined,
+                            color: isDarkTheme.value
+                                ? Colors.white //Color(0xFF0D6E6E)
+                                : Colors.black //Color(0xFFFF3D3D),
+                            ),
                       ),
                     ),
                   ),
@@ -191,12 +189,11 @@ class _EventScreenState extends State<EventScreen> {
                         onPressed: () {
                           _getEndTimeFromUser(isEndTime: true);
                         },
-                        icon: Icon(
-                          Icons.access_time_rounded,
-                          color: isDarkTheme.value
-                              ? Color(0xFF0D6E6E)
-                              : Color(0xFFFF3D3D),
-                        ),
+                        icon: Icon(Icons.access_time_rounded,
+                            color: isDarkTheme.value
+                                ? Colors.white //Color(0xFF0D6E6E)
+                                : Colors.black //Color(0xFFFF3D3D),
+                            ),
                       ),
                     ),
                   ),
@@ -335,16 +332,18 @@ class _EventScreenState extends State<EventScreen> {
                       width: 170,
                       height: 50,
                       decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(20),
-                        color: isDarkTheme.value
-                            ? Color(0xFF0D6E6E)
-                            : Color(0xFFFF3D3D),
-                      ),
+                          borderRadius: BorderRadius.circular(20),
+                          color: isDarkTheme.value
+                              ? Colors.white //Color(0xFF0D6E6E)
+                              : Colors.black //Color(0xFFFF3D3D),
+                          ),
                       child: Center(
                         child: Text(
                           "Add Prep",
                           style: TextStyle(
-                            color: Colors.white,
+                            color: isDarkTheme.value
+                                ? Colors.black //Color(0xFF0D6E6E)
+                                : Colors.white, //Color(0xFFFF3D3D),
                             fontSize: 20,
                           ),
                         ),
@@ -360,16 +359,18 @@ class _EventScreenState extends State<EventScreen> {
                       width: 150,
                       height: 50,
                       decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(20),
-                        color: isDarkTheme.value
-                            ? Color(0xFF0D6E6E)
-                            : Color(0xFFFF3D3D),
-                      ),
+                          borderRadius: BorderRadius.circular(20),
+                          color: isDarkTheme.value
+                              ? Colors.white //Color(0xFF0D6E6E)
+                              : Colors.black //Color(0xFFFF3D3D),
+                          ),
                       child: Center(
                         child: Text(
                           "Add Event",
                           style: TextStyle(
-                            color: Colors.white,
+                            color: isDarkTheme.value
+                                ? Colors.black //Color(0xFF0D6E6E)
+                                : Colors.white, //Color(0xFFFF3D3D),
                             fontSize: 20,
                           ),
                         ),
@@ -392,7 +393,7 @@ class _EventScreenState extends State<EventScreen> {
     // Define your list of colors here
     List<Color> predefinedColors = [
       Colors.red,
-      Colors.black,
+      Colors.brown,
       Colors.lightBlue,
       const Color.fromARGB(255, 7, 81, 141),
       Colors.green,
@@ -431,11 +432,15 @@ class _EventScreenState extends State<EventScreen> {
     TimeOfDay? taken = TimeOfDay.fromDateTime(parsedStartDate);
 
     TimeOfDay now = TimeOfDay.now();
+    DateTime parsedendDate =
+        DateFormat('hh:mm a').parse(_endTimeController.text);
+
+    TimeOfDay? end = TimeOfDay.fromDateTime(parsedendDate);
 
     if (_eventNameController.text.isNotEmpty &&
         _eventDescriptionController.text.isNotEmpty &&
         _emailController.text.isNotEmpty) {
-      if (_isBefore(taken, now)) {
+      if (_isBefore(taken, end)) {
         print("yes");
         int value = await _addTaskToDb();
         Navigator.pushReplacement(
@@ -444,7 +449,7 @@ class _EventScreenState extends State<EventScreen> {
         );
       } else {
         print(taken);
-        print(now);
+        print(end);
         print("Event time must be After current time.");
         Get.snackbar(
           "Invalid Time",
@@ -471,10 +476,7 @@ class _EventScreenState extends State<EventScreen> {
   }
 
   bool _isBefore(TimeOfDay time1, TimeOfDay time2) {
-    print(time1);
-    print(time2);
-    return time1.hour > time2.hour ||
-        (time1.hour == time2.hour && time1.minute > time2.minute);
+    return time1.hour < time2.hour || time1.hour == time2.hour;
   }
 
   Future<int> _addTaskToDb() async {
@@ -692,14 +694,25 @@ class _EventScreenState extends State<EventScreen> {
           }
         });
       } else {
-        Get.snackbar(
-          "Required",
-          "Time must be in Future",
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.white,
-          icon: Icon(Icons.warning_amber_rounded),
-          colorText: Colors.red,
-        );
+        setState(() {
+          if (isStartTime) {
+            widget.endTime = pickedDateTime;
+            _endTimeController.text =
+                DateFormat('hh:mm a').format(pickedDateTimeadd);
+            _startTimeController.text =
+                DateFormat('hh:mm a').format(pickedDateTime);
+          } else {
+            // Update end time logic if required
+          }
+        });
+        // Get.snackbar(
+        //   "Required",
+        //   "Time must be in Future",
+        //   snackPosition: SnackPosition.BOTTOM,
+        //   backgroundColor: Colors.white,
+        //   icon: Icon(Icons.warning_amber_rounded),
+        //   colorText: Colors.red,
+        // );
       }
     }
   }

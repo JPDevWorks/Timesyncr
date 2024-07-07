@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import 'package:timesyncr/controller/task_controller.dart';
+import 'package:timesyncr/controller/newtask_controller.dart';
 import 'package:timesyncr/editevent.dart';
-import 'package:timesyncr/models/Event.dart';
-import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
+import 'package:timesyncr/models/NewEvent.dart';
+import 'package:timesyncr/them_controler.dart';
 
 class ViewEvent extends StatefulWidget {
   final Event event;
@@ -18,7 +18,8 @@ class ViewEvent extends StatefulWidget {
 }
 
 class _ViewEventState extends State<ViewEvent> {
-  final TaskController task = Get.put(TaskController());
+  final NewTaskController task = Get.put(NewTaskController());
+  final ThemeController _themeController = Get.put(ThemeController());
 
   void _confirmDeleteEvent() {
     showDialog(
@@ -38,7 +39,6 @@ class _ViewEventState extends State<ViewEvent> {
               child: Text('Yes'),
               onPressed: () {
                 task.deleteEvent(widget.event);
-
                 Navigator.pushNamed(context, '/home');
               },
             ),
@@ -51,93 +51,108 @@ class _ViewEventState extends State<ViewEvent> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: widget.color, // Background color matching the image
+      backgroundColor:
+          _themeController.isDarkTheme.value ? Colors.black : Colors.white,
       appBar: AppBar(
-        backgroundColor: widget.color, // Dark teal color
+        backgroundColor: widget.color,
         elevation: 0,
-        automaticallyImplyLeading: true, // Adds a default back button
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
-          color: Colors.black,
+          color:
+              _themeController.isDarkTheme.value ? Colors.white : Colors.black,
           onPressed: () {
             Navigator.pop(context);
             Navigator.pushNamed(context, '/home');
           },
         ),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.edit),
+            color: _themeController.isDarkTheme.value
+                ? Colors.white70
+                : Colors.black,
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => EditEventScreen(
+                    eventId: widget.event.id!,
+                  ),
+                ),
+              );
+            },
+          ),
+          IconButton(
+            icon: Icon(Icons.delete),
+            color: _themeController.isDarkTheme.value
+                ? Colors.white70
+                : Colors.black,
+            onPressed: _confirmDeleteEvent,
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(20.0),
-          child: AnimationConfiguration.staggeredList(
-            position: 0,
-            duration: const Duration(milliseconds: 375),
-            child: SlideAnimation(
-              verticalOffset: 50.0,
-              child: FadeInAnimation(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildHeader(),
-                    SizedBox(height: 20),
-                    _buildDetailRow(
-                      title: 'Additional Description',
-                      content: widget.event.eventDescription.toString(),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildHeader(),
+              SizedBox(height: 20),
+              _buildDetailSection(
+                icon: Icons.description,
+                title: 'Notes',
+                content: widget.event.notes.toString(),
+              ),
+              _buildTimeSection(),
+              _buildDetailSection(
+                icon: Icons.calendar_today,
+                title: 'Start Date',
+                content: widget.event.startDate,
+              ),
+              _buildDetailSection(
+                icon: Icons.calendar_today,
+                title: 'End Date',
+                content: widget.event.endDate.toString(),
+              ),
+              _buildDetailSection(
+                icon: Icons.repeat,
+                title: 'Repeat',
+                content: widget.event.repetitiveEvent.toString(),
+              ),
+              _buildTimeLeftCard(),
+              SizedBox(height: 40),
+              Center(
+                child: ElevatedButton(
+                  onPressed: () {
+                    setState(() {
+                      task.updateeventdone(widget.event);
+                      Navigator.pushNamed(context, '/home');
+                    });
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: _themeController.isDarkTheme.value
+                        ? Colors.white70
+                        : Colors.black,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30.0),
                     ),
-                    SizedBox(height: 20),
-                    _buildTimeLeftRow(),
-                    SizedBox(height: 20),
-                    _buildDetailRow(
-                      title: 'StartDate',
-                      content: widget.event.startDate, // Use dynamic data
+                    padding: EdgeInsets.symmetric(horizontal: 40, vertical: 20),
+                  ),
+                  child: Text(
+                    widget.event.isCompleted == 0
+                        ? "Mark as Done"
+                        : "Completed",
+                    style: TextStyle(
+                      color: _themeController.isDarkTheme.value
+                          ? Colors.black
+                          : Colors.white,
+                      fontSize: 16,
                     ),
-                    SizedBox(height: 20),
-                    _buildDetailRow(
-                      title: 'EndDate',
-                      content:
-                          widget.event.endDate.toString(), // Use dynamic data
-                    ),
-                    SizedBox(height: 20),
-                    _buildDetailRow(
-                      title: 'Repeat',
-                      content:
-                          widget.event.repeat.toString(), // Use dynamic data
-                    ),
-                    SizedBox(height: 20),
-                    _buildDetailRow(
-                      title: 'Remaind',
-                      content:
-                          '${widget.event.reminderBefore.toString()} minutes early', // Use dynamic data
-                    ),
-                    SizedBox(height: 40),
-                    Center(
-                      child: ElevatedButton(
-                        onPressed: () {
-                          setState(() {
-                            task.updateeventdone(widget.event);
-                            Navigator.pushNamed(context, '/home');
-                          });
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.black,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30.0),
-                          ),
-                          padding: EdgeInsets.symmetric(
-                              horizontal: 40, vertical: 20),
-                        ),
-                        child: Text(
-                          widget.event.isCompleted == 0 ? "Done" : "Completed",
-                          style: TextStyle(
-                            color: Colors.white, // Text color of button
-                            fontSize: 16,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
               ),
-            ),
+            ],
           ),
         ),
       ),
@@ -149,135 +164,270 @@ class _ViewEventState extends State<ViewEvent> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Container(
-              padding: EdgeInsets.symmetric(vertical: 5, horizontal: 15),
-              decoration: BoxDecoration(
-                color: Colors.transparent,
-                borderRadius: BorderRadius.circular(30),
-                border: Border.all(width: 2.0),
-              ),
-              child: Text(
-                widget.event.category.toString(), // Use dynamic category
+            Chip(
+              label: Text(
+                widget.event.selectedTag.toString(),
                 style: TextStyle(
-                  color: Colors.black,
-                  fontSize: 16,
+                  color: _themeController.isDarkTheme.value
+                      ? Colors.white
+                      : Colors.black,
                 ),
               ),
+              backgroundColor: widget.color.withOpacity(0.2),
             ),
-            Row(
-              children: [
-                IconButton(
-                  icon: Icon(Icons.edit),
-                  color: Colors.black,
-                  onPressed: () {
-                    Navigator.pop(context);
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => EditEvent(
-                          event: widget.event,
-                          selectedDate: DateFormat('dd-MM-yyyy')
-                              .parse(widget.event.startDate),
-                          startTime: DateFormat('hh:mm a')
-                              .parse(widget.event.startTime),
-                          endTime:
-                              DateFormat('hh:mm a').parse(widget.event.endTime),
-                          endDate: DateFormat('dd-MM-yyyy')
-                              .parse(widget.event.endDate!),
-                        ),
-                      ),
-                    );
-                  },
+            SizedBox(width: 10),
+            if (widget.event.planevent == "Yes")
+              Chip(
+                label: Text(
+                  "PREP EVENT",
+                  style: TextStyle(
+                    color: _themeController.isDarkTheme.value
+                        ? Colors.white
+                        : Colors.black,
+                  ),
                 ),
-                IconButton(
-                  icon: Icon(Icons.delete),
-                  color: Colors.black,
-                  onPressed: _confirmDeleteEvent,
-                ),
-              ],
-            ),
+                backgroundColor: widget.color.withOpacity(0.2),
+              ),
           ],
         ),
         SizedBox(height: 10),
         Text(
-          widget.event.eventName
-              .toString()
-              .toUpperCase(), // Use dynamic event name
+          widget.event.title.toString().toUpperCase(),
           style: TextStyle(
-            fontSize: 40,
+            fontSize: 30,
             fontWeight: FontWeight.bold,
-            color: Colors.black,
+            color: _themeController.isDarkTheme.value
+                ? Colors.white
+                : Colors.black,
           ),
         ),
       ],
     );
   }
 
-  Widget _buildTimeLeftRow() {
-    // Parse the start time and end time using the intl package
+  Widget _buildDetailSection({
+    required IconData icon,
+    required String title,
+    required String content,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 10.0),
+      child: Row(
+        children: [
+          Icon(
+            icon,
+            color: _themeController.isDarkTheme.value
+                ? Colors.white70
+                : Colors.black54,
+          ),
+          SizedBox(width: 10),
+          Expanded(
+            child: Container(
+              padding: EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: _themeController.isDarkTheme.value
+                    ? Colors.white12
+                    : Colors.grey[200],
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: _themeController.isDarkTheme.value
+                          ? Colors.white70
+                          : Colors.black54,
+                    ),
+                  ),
+                  SizedBox(height: 5),
+                  Text(
+                    content,
+                    style: TextStyle(
+                      fontSize: 20,
+                      color: _themeController.isDarkTheme.value
+                          ? Colors.white
+                          : Colors.black,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTimeSection() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 10.0),
+      child: Row(
+        children: [
+          Icon(
+            Icons.access_time,
+            color: _themeController.isDarkTheme.value
+                ? Colors.white70
+                : Colors.black54,
+          ),
+          SizedBox(width: 10),
+          Expanded(
+            child: Row(
+              children: [
+                Expanded(
+                  child: Container(
+                    padding: EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: _themeController.isDarkTheme.value
+                          ? Colors.white12
+                          : Colors.grey[200],
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Start Time',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: _themeController.isDarkTheme.value
+                                ? Colors.white70
+                                : Colors.black54,
+                          ),
+                        ),
+                        SizedBox(height: 5),
+                        Text(
+                          widget.event.startTime,
+                          style: TextStyle(
+                            fontSize: 20,
+                            color: _themeController.isDarkTheme.value
+                                ? Colors.white
+                                : Colors.black,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                SizedBox(width: 10),
+                Expanded(
+                  child: Container(
+                    padding: EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: _themeController.isDarkTheme.value
+                          ? Colors.white12
+                          : Colors.grey[200],
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'End Time',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: _themeController.isDarkTheme.value
+                                ? Colors.white70
+                                : Colors.black54,
+                          ),
+                        ),
+                        SizedBox(height: 5),
+                        Text(
+                          widget.event.endTime,
+                          style: TextStyle(
+                            fontSize: 20,
+                            color: _themeController.isDarkTheme.value
+                                ? Colors.white
+                                : Colors.black,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTimeLeftCard() {
+    DateTime startDate = DateFormat('dd-MM-yyyy').parse(widget.event.startDate);
     DateTime startTime = DateFormat('hh:mm a').parse(widget.event.startTime);
+    DateTime endDate = DateFormat('dd-MM-yyyy').parse(widget.event.endDate);
     DateTime endTime = DateFormat('hh:mm a').parse(widget.event.endTime);
 
-    Duration timeLeft = endTime.difference(startTime);
-
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Duration',
-              style: TextStyle(
-                color: const Color.fromARGB(126, 0, 0, 0),
-                fontSize: 16,
-              ),
-            ),
-            Text(
-              '${timeLeft.inHours}h ${timeLeft.inMinutes % 60}m', // Dynamic time left
-              style: TextStyle(
-                color: Colors.black,
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
-        ),
-      ],
+    DateTime startDateTime = DateTime(
+      startDate.year,
+      startDate.month,
+      startDate.day,
+      startTime.hour,
+      startTime.minute,
     );
-  }
 
-  Widget _buildDetailRow({required String title, required String content}) {
-    return Container(
-      padding: EdgeInsets.all(0),
-      decoration: BoxDecoration(
-        color: Colors.transparent,
-        border: Border.all(
-          color: Colors.transparent, // Dark teal color
-          width: 1,
-        ),
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+    DateTime endDateTime = DateTime(
+      endDate.year,
+      endDate.month,
+      endDate.day,
+      endTime.hour,
+      endTime.minute,
+    );
+
+    Duration timeLeft = endDateTime.difference(startDateTime);
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 10.0),
+      child: Row(
         children: [
-          Text(
-            title,
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color:
-                  const Color.fromARGB(255, 125, 123, 123), // Dark teal color
-            ),
+          Icon(
+            Icons.timer,
+            color: _themeController.isDarkTheme.value
+                ? Colors.white70
+                : Colors.black54,
           ),
-          SizedBox(height: 5),
-          Text(
-            content,
-            style: TextStyle(
-              fontSize: 23,
-              color: Colors.black,
+          SizedBox(width: 10),
+          Expanded(
+            child: Container(
+              padding: EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: _themeController.isDarkTheme.value
+                    ? Colors.white12
+                    : Colors.grey[200],
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Duration',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: _themeController.isDarkTheme.value
+                          ? Colors.white70
+                          : Colors.black54,
+                    ),
+                  ),
+                  SizedBox(height: 5),
+                  Text(
+                    '${timeLeft.inDays}d ${timeLeft.inHours}h ${timeLeft.inMinutes % 60}m',
+                    style: TextStyle(
+                      fontSize: 20,
+                      color: _themeController.isDarkTheme.value
+                          ? Colors.white
+                          : Colors.black,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ],
