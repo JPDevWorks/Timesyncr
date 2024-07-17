@@ -145,6 +145,7 @@ class _EditEventScreenState extends State<EditEventScreen> {
                       spacing: 10,
                       runSpacing: 10,
                       children: [
+                        _buildTag('Others', Color(0xFFE4F1EE)),
                         _buildTag('FITNESS', Color(0xFFFFADAD)),
                         _buildTag('ME TIME', Color(0xFFFFD6A5)),
                         _buildTag('FAMILY', Color(0xFFD9EDF8)),
@@ -177,23 +178,32 @@ class _EditEventScreenState extends State<EditEventScreen> {
                     ),
                     SizedBox(height: 20),
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        ElevatedButton(
-                          onPressed: () {
-                            _updateEvent(context, event);
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.teal,
-                            disabledBackgroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20),
+                        Center(
+                          child: ElevatedButton(
+                            onPressed: () {
+                              _updateEvent(context, event);
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor:
+                                  isDark ? Colors.white : Colors.black,
+                              disabledBackgroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: 30, vertical: 15),
                             ),
-                            padding: EdgeInsets.symmetric(
-                                horizontal: 30, vertical: 15),
+                            child: Center(
+                              child: Text('Update Event',
+                                  style: TextStyle(
+                                      fontSize: 18,
+                                      color: isDark
+                                          ? Colors.black
+                                          : Colors.black)),
+                            ),
                           ),
-                          child: Text('Update Event',
-                              style: TextStyle(fontSize: 18)),
                         ),
                       ],
                     ),

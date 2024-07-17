@@ -4,7 +4,7 @@ import 'package:get/get.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:timesyncr/Home.dart';
-import 'package:timesyncr/database/database_service.dart';
+import 'package:timesyncr/database/database.dart';
 import 'package:timesyncr/models/user.dart';
 import 'package:timesyncr/them_controler.dart';
 
@@ -32,8 +32,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> getUserProfile() async {
-    Userdetials? user =
-        await DatabaseService.getUserDetailsByEmail(widget.userId);
+    Userdetials? user = await Databasee.getUserDetailsByEmail(widget.userId);
     if (user != null) {
       setState(() {
         userProfile = user;
@@ -95,19 +94,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
           children: [
             Container(
               height: 325,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: themeController.isDarkTheme.value
-                      ? [Colors.black, Colors.black]
-                      : [Colors.white, Colors.white],
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                ),
-                borderRadius: const BorderRadius.only(
-                  bottomLeft: Radius.circular(30),
-                  bottomRight: Radius.circular(30),
-                ),
-              ),
+              color: themeController.isDarkTheme.value
+                  ? Colors.black
+                  : Colors.white,
               child: Padding(
                 padding: const EdgeInsets.all(20.0),
                 child: Column(
@@ -171,56 +160,65 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               ),
             ),
-            const SizedBox(height: 20),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Profile Information',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  _buildProfileInfoTile('Name', _nameController),
-                  const SizedBox(height: 10),
-                  _buildProfileInfoTile(
-                    'Phone Number',
-                    _phoneController,
-                    keyboardType: TextInputType.phone,
-                  ),
-                  const SizedBox(height: 20),
-                  Center(
-                    child: ElevatedButton(
-                      onPressed: _isLoading ? null : () => updateUserProfile(),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: themeController.isDarkTheme.value
-                            ? Colors.white
-                            : Colors.black,
+            const SizedBox(height: 0),
+            Container(
+              color: themeController.isDarkTheme.value
+                  ? Colors.black
+                  : Colors.white,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Profile Information',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
                       ),
-                      child: _isLoading
-                          ? const SizedBox(
-                              height: 20.0,
-                              width: 20.0,
-                              child: CircularProgressIndicator(
-                                color: Colors.white,
-                                strokeWidth: 2.0,
-                              ),
-                            )
-                          : Text(
-                              'Update Profile',
-                              style: TextStyle(
-                                color: themeController.isDarkTheme.value
-                                    ? Colors.black
-                                    : Colors.white,
-                              ),
-                            ),
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 20),
+                    _buildProfileInfoTile('Name', _nameController),
+                    const SizedBox(height: 10),
+                    _buildProfileInfoTile(
+                      'Phone Number',
+                      _phoneController,
+                      keyboardType: TextInputType.phone,
+                    ),
+                    const SizedBox(height: 20),
+                    Center(
+                      child: ElevatedButton(
+                        onPressed:
+                            _isLoading ? null : () => updateUserProfile(),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: themeController.isDarkTheme.value
+                              ? Colors.white
+                              : Colors.black,
+                        ),
+                        child: _isLoading
+                            ? const SizedBox(
+                                height: 20.0,
+                                width: 20.0,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 2.0,
+                                ),
+                              )
+                            : Text(
+                                'Update Profile',
+                                style: TextStyle(
+                                  color: themeController.isDarkTheme.value
+                                      ? Colors.black
+                                      : Colors.white,
+                                ),
+                              ),
+                      ),
+                    ),
+                    SizedBox(
+                      height: 40,
+                    )
+                  ],
+                ),
               ),
             ),
           ],
@@ -293,7 +291,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         _isLoading = true;
       });
       try {
-        await DatabaseService.updateUserDetailsByEmail(
+        await Databasee.updateUserDetailsByEmail(
           email: userProfile?.email ?? '',
           name: newName,
           phoneNumber: newPhone,

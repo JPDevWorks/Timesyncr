@@ -1,8 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:timesyncr/Home.dart'; // Import the homepage
+import 'package:timesyncr/Home.dart';
 import 'package:timesyncr/FormHeader.dart';
-import 'package:timesyncr/database/database_service.dart';
+import 'package:timesyncr/database/database.dart';
 import 'package:timesyncr/models/user.dart';
 import 'package:timesyncr/service/auth.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
@@ -79,15 +79,19 @@ class _LoginFormWidgetState extends State<LoginFormWidget> {
         password: passwordcontroller.text,
         status: "Yes",
       );
-      if (await DatabaseService.userAdd(user)) {
+      if (await Databasee.userAdd(user)) {
         print("added User");
       }
       Navigator.pushReplacementNamed(context, '/home');
     } on FirebaseAuthException catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
       String message = "";
-      if (e.code == 'user-not-found') {
+      print(e);
+      if (e.code.contains('user-not-found')) {
         message = "User not found for that email.";
-      } else if (e.code == "invalid-credential") {
+      } else if (e.code.contains("invalid-credential")) {
         print(e.code);
         message = "Wrong Email or password provided by user.";
       } else {
@@ -130,7 +134,9 @@ class _LoginFormWidgetState extends State<LoginFormWidget> {
               decoration: const InputDecoration(
                 label: Text('Email'),
                 prefixIcon: Icon(Icons.email_outlined),
-                border: OutlineInputBorder(), // Add border
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(25.0)),
+                ),
               ),
             ),
             const SizedBox(height: 20.0),
@@ -156,7 +162,9 @@ class _LoginFormWidgetState extends State<LoginFormWidget> {
                     });
                   },
                 ),
-                border: const OutlineInputBorder(), // Add border
+                border: const OutlineInputBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(25.0)),
+                ), // Add border
               ),
             ),
             const SizedBox(height: 20.0),

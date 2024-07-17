@@ -34,6 +34,8 @@ class DayView extends StatelessWidget {
       headerDateFormat: 'dd-MM-yy EEEE',
       headerHeight: 52,
       headerStyle: CalendarHeaderStyle(
+        backgroundColor:
+            themeController.isDarkTheme.value ? Colors.black : Colors.white,
         textAlign: TextAlign.center,
         textStyle: TextStyle(
           fontWeight: FontWeight.bold,
@@ -43,6 +45,8 @@ class DayView extends StatelessWidget {
         ),
       ),
       dataSource: dataSource,
+      appointmentTextStyle: TextStyle(color: Colors.black),
+      onTap: onTap,
       timeSlotViewSettings: TimeSlotViewSettings(
         timeIntervalHeight: 55,
         timeTextStyle: TextStyle(

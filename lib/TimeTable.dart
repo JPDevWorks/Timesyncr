@@ -10,7 +10,6 @@ import 'package:timesyncr/TimeTable/Day.dart';
 import 'package:timesyncr/TimeTable/Month.dart';
 import 'package:timesyncr/TimeTable/Week.dart';
 import 'package:timesyncr/ViewSomeEvents.dart';
-import 'package:timesyncr/models/Event.dart';
 import 'package:timesyncr/controller/newtask_controller.dart';
 import 'package:timesyncr/them_controler.dart';
 
@@ -152,7 +151,7 @@ class _TimeTableState extends State<TimeTable> {
     List<Appointment> appointments = [];
 
     for (var event in _taskController.events) {
-      Color color = Color(event.color!);
+      Color color = Color(event.color);
       DateTime startTime =
           dateFormat.parse('${event.startDate} ${event.startTime}');
       DateTime endTime = dateFormat.parse('${event.endDate} ${event.endTime}');
@@ -296,6 +295,9 @@ class _TimeTableState extends State<TimeTable> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           BottomNavigationBar(
+            backgroundColor: _themeController.isDarkTheme.value
+                ? Colors.grey[900]
+                : Colors.white,
             items: const <BottomNavigationBarItem>[
               BottomNavigationBarItem(
                 icon: Icon(Icons.calendar_view_month),
@@ -313,7 +315,7 @@ class _TimeTableState extends State<TimeTable> {
             currentIndex: _selectedIndex,
             selectedItemColor: _themeController.isDarkTheme.value
                 ? Colors.white
-                : const Color.fromARGB(255, 0, 0, 0),
+                : Colors.black,
             onTap: _onItemTapped,
           ),
           Expanded(

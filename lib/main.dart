@@ -8,13 +8,11 @@ import 'package:workmanager/workmanager.dart';
 import 'Home.dart';
 import 'Profile.dart';
 import 'Settings.dart';
-
-import 'database/database_service.dart';
 import 'forgotpassword.dart';
 import 'loginscreen.dart';
 import 'models/user.dart';
 import 'Addevent.dart';
-import 'service/Notification.dart';
+import 'service/NotificationService.dart';
 import 'singupscreen.dart';
 import 'splash.dart';
 import 'them_controler.dart';
@@ -26,7 +24,6 @@ void main() async {
   await GetStorage.init();
   NotificationService().initializeTimeZone();
   NotificationService.initialize();
-  NotificationService().getPendingNotificationDetails();
   //await DatabaseService.getdb();
   await Databasee.getdb();
 
@@ -61,7 +58,7 @@ void main() async {
 }
 
 Future<String> getInitialRoute() async {
-  Userdetials? latestUser = await DatabaseService.userGet();
+  Userdetials? latestUser = await Databasee.userGet();
   if (latestUser != null && latestUser.status == 'Yes') {
     print('Email User : ${latestUser.email}');
     return '/home';
@@ -71,7 +68,7 @@ Future<String> getInitialRoute() async {
 }
 
 Future<String> getIntialemail() async {
-  Userdetials? latestUser = await DatabaseService.userGet();
+  Userdetials? latestUser = await Databasee.userGet();
   if (latestUser != null && latestUser.status == 'Yes') {
     print('Email User : ${latestUser.email}');
     return '${latestUser.email}';

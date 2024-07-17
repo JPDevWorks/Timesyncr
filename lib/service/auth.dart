@@ -1,5 +1,5 @@
 import 'package:timesyncr/Home.dart';
-import 'package:timesyncr/database/database_service.dart';
+import 'package:timesyncr/database/database.dart';
 import 'package:timesyncr/models/user.dart';
 import 'package:timesyncr/service/databasemethods.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -42,7 +42,7 @@ class AuthMethods {
 
         Userdetials userdata = Userdetials.fromJson(userInfoMap);
 
-        await DatabaseService.userAdd(userdata);
+        await Databasee.userAdd(userdata);
 
         await DatabaseMethods()
             .addUser(userDetails.uid, userInfoMap)
@@ -89,7 +89,7 @@ class AuthMethods {
 
       Userdetials userdata = Userdetials.fromJson(userInfoMap);
 
-      await DatabaseService.userAdd(userdata);
+      await Databasee.userAdd(userdata);
 
       await DatabaseMethods()
           .addUser(userDetails.uid, userInfoMap)

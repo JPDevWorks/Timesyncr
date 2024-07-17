@@ -4,7 +4,6 @@ import 'package:intl/intl.dart';
 import 'package:timesyncr/Addplanevent.dart';
 import 'package:timesyncr/Home.dart';
 import 'package:timesyncr/models/NewEvent.dart';
-import 'package:timesyncr/planevent.dart';
 import 'package:timesyncr/them_controler.dart';
 import 'package:timesyncr/controller/newtask_controller.dart';
 
@@ -16,7 +15,7 @@ class NewEventController extends GetxController {
   var endDate = DateTime.now().add(Duration(hours: 1)).obs;
   var endTime = TimeOfDay.now().obs;
   var repetitiveEvent = 'None'.obs;
-  var selectedTag = ''.obs;
+  var selectedTag = 'Others'.obs;
   var selectedDays = 1.obs; // Added to track selected days for all-day event
 
   void setInitialValues(DateTime initialStartDate, TimeOfDay initialStartTime) {
@@ -37,8 +36,8 @@ class NewEventController extends GetxController {
     endDate.value = DateTime.now().add(Duration(hours: 1));
     endTime.value = TimeOfDay.now();
     repetitiveEvent.value = 'None';
-    selectedTag.value = '';
-    selectedDays.value = 1; 
+    selectedTag.value = 'Others';
+    selectedDays.value = 1;
   }
 }
 
@@ -77,6 +76,8 @@ class _NewEventScreenState extends State<NewEventScreen> {
 
   Color getTagColor(String tag) {
     switch (tag) {
+      case 'Others':
+        return Color(0xFFDEDAF4);
       case 'FITNESS':
         return Color(0xFFFFADAD);
       case 'ME TIME':
@@ -118,16 +119,16 @@ class _NewEventScreenState extends State<NewEventScreen> {
         controller.startDate.value.year,
         controller.startDate.value.month,
         controller.startDate.value.day,
-        7, // Start time 7 AM
+        7,
+        0,
+      );
+      endDateTime = DateTime(
+        controller.endDate.value.year,
+        controller.endDate.value.month,
+        controller.endDate.value.day,
+        19,
         0,
       ).add(Duration(days: 1));
-      endDateTime = DateTime(
-        controller.startDate.value.year,
-        controller.startDate.value.month,
-        controller.startDate.value.day,
-        19, // End time 7 PM
-        0,
-      ).add(Duration(days: controller.selectedDays.value + 1));
     } else {
       startDateTime = DateTime(
         controller.startDate.value.year,
@@ -155,9 +156,13 @@ class _NewEventScreenState extends State<NewEventScreen> {
         title: titleController.text,
         location: locationController.text,
         startDate: DateFormat('dd-MM-yyyy').format(startDateTime),
-        startTime: DateFormat('hh:mm a').format(startDateTime),
+        startTime: controller.isAllDayEvent.value
+            ? DateFormat('hh:mm a').format(startDateTime)
+            : DateFormat('hh:mm a').format(startDateTime),
         endDate: DateFormat('dd-MM-yyyy').format(endDateTime),
-        endTime: DateFormat('hh:mm a').format(endDateTime),
+        endTime: controller.isAllDayEvent.value
+            ? DateFormat('hh:mm a').format(endDateTime)
+            : DateFormat('hh:mm a').format(endDateTime),
         isAllDayEvent: controller.isAllDayEvent.value,
         repetitiveEvent: controller.repetitiveEvent.value,
         selectedTag: controller.selectedTag.value,
@@ -275,19 +280,68 @@ class _NewEventScreenState extends State<NewEventScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           SizedBox(height: 10),
-                          Text('Choose duration:',
+                          Text('Start Date:',
                               style: TextStyle(
                                   color: isDark ? Colors.white : Colors.black)),
                           SizedBox(height: 10),
-                          Wrap(
-                            spacing: 20,
-                            children: [
-                              _buildDurationButton(1, isDark),
-                              _buildDurationButton(3, isDark),
-                              _buildDurationButton(5, isDark),
-                              _buildDurationButton(10, isDark),
-                              _buildDurationButton(15, isDark),
-                            ],
+                          GestureDetector(
+                            onTap: () => _selectDate(context, true),
+                            child: InputDecorator(
+                              decoration: InputDecoration(
+                                contentPadding: EdgeInsets.symmetric(
+                                    horizontal: 15, vertical: 5),
+                                filled: true,
+                                fillColor: isDark
+                                    ? Color(0xFF1C1C1C)
+                                    : Colors.grey[200],
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                  borderSide: BorderSide.none,
+                                ),
+                                suffixIcon: Icon(Icons.arrow_drop_down,
+                                    color:
+                                        isDark ? Colors.white : Colors.black),
+                              ),
+                              child: Text(
+                                DateFormat('MMM dd')
+                                    .format(controller.startDate.value),
+                                style: TextStyle(
+                                    color:
+                                        isDark ? Colors.white : Colors.black),
+                              ),
+                            ),
+                          ),
+                          SizedBox(height: 10),
+                          Text('End Date:',
+                              style: TextStyle(
+                                  color: isDark ? Colors.white : Colors.black)),
+                          SizedBox(height: 10),
+                          GestureDetector(
+                            onTap: () => _selectDate(context, false),
+                            child: InputDecorator(
+                              decoration: InputDecoration(
+                                contentPadding: EdgeInsets.symmetric(
+                                    horizontal: 15, vertical: 5),
+                                filled: true,
+                                fillColor: isDark
+                                    ? Color(0xFF1C1C1C)
+                                    : Colors.grey[200],
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                  borderSide: BorderSide.none,
+                                ),
+                                suffixIcon: Icon(Icons.arrow_drop_down,
+                                    color:
+                                        isDark ? Colors.white : Colors.black),
+                              ),
+                              child: Text(
+                                DateFormat('MMM dd')
+                                    .format(controller.endDate.value),
+                                style: TextStyle(
+                                    color:
+                                        isDark ? Colors.white : Colors.black),
+                              ),
+                            ),
                           ),
                         ],
                       );
@@ -505,6 +559,7 @@ class _NewEventScreenState extends State<NewEventScreen> {
                     spacing: 10,
                     runSpacing: 10,
                     children: [
+                      _buildTag('Others', Color(0xFFDEDAF4)),
                       _buildTag('FITNESS', Color(0xFFFFADAD)),
                       _buildTag('ME TIME', Color(0xFFFFD6A5)),
                       _buildTag('FAMILY', Color(0xFFD9EDF8)),
@@ -545,7 +600,7 @@ class _NewEventScreenState extends State<NewEventScreen> {
                           if (controller.isAllDayEvent.value) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
-                                content: Text('Event updated successfully.'),
+                                content: Text('Event Added successfully.'),
                               ),
                             );
                             Navigator.pushNamed(context, '/home');
@@ -694,40 +749,6 @@ class _NewEventScreenState extends State<NewEventScreen> {
         ));
   }
 
-  Widget _buildDurationButton(int days, bool isDark) {
-    return Obx(() => GestureDetector(
-          onTap: () {
-            controller.selectedDays.value = days;
-          },
-          child: Column(
-            children: [
-              Container(
-                decoration: BoxDecoration(
-                  color: controller.selectedDays.value == days
-                      ? Colors.black
-                      : isDark
-                          ? Color(0xFF1C1C1C)
-                          : Colors.grey[300],
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                child: Text(
-                  '$days days',
-                  style: TextStyle(
-                    color: controller.selectedDays.value == days
-                        ? Colors.white
-                        : Colors.black,
-                  ),
-                ),
-              ),
-              SizedBox(
-                height: 10,
-              ),
-            ],
-          ),
-        ));
-  }
-
   Future<void> _selectDate(BuildContext context, bool isStartDate) async {
     DateTime initialDate =
         isStartDate ? controller.startDate.value : controller.endDate.value;
@@ -743,16 +764,12 @@ class _NewEventScreenState extends State<NewEventScreen> {
           picked.year,
           picked.month,
           picked.day,
-          controller.startTime.value.hour,
-          controller.startTime.value.minute,
         );
       } else {
         controller.endDate.value = DateTime(
           picked.year,
           picked.month,
           picked.day,
-          controller.endTime.value.hour,
-          controller.endTime.value.minute,
         );
       }
     }

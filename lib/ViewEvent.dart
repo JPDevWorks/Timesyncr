@@ -58,8 +58,7 @@ class _ViewEventState extends State<ViewEvent> {
         elevation: 0,
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
-          color:
-              _themeController.isDarkTheme.value ? Colors.white : Colors.black,
+          color: Colors.black,
           onPressed: () {
             Navigator.pop(context);
             Navigator.pushNamed(context, '/home');
@@ -68,9 +67,7 @@ class _ViewEventState extends State<ViewEvent> {
         actions: [
           IconButton(
             icon: Icon(Icons.edit),
-            color: _themeController.isDarkTheme.value
-                ? Colors.white70
-                : Colors.black,
+            color: Colors.black,
             onPressed: () {
               Navigator.push(
                 context,
@@ -84,9 +81,7 @@ class _ViewEventState extends State<ViewEvent> {
           ),
           IconButton(
             icon: Icon(Icons.delete),
-            color: _themeController.isDarkTheme.value
-                ? Colors.white70
-                : Colors.black,
+            color: Colors.black,
             onPressed: _confirmDeleteEvent,
           ),
         ],
@@ -132,8 +127,12 @@ class _ViewEventState extends State<ViewEvent> {
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: _themeController.isDarkTheme.value
-                        ? Colors.white70
-                        : Colors.black,
+                        ? widget.event.isCompleted == 1
+                            ? Colors.grey
+                            : Colors.white70
+                        : widget.event.isCompleted == 1
+                            ? Colors.grey
+                            : Colors.black,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(30.0),
                     ),

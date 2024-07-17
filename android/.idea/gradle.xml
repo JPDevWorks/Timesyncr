@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="GradleMigrationSettings" migrationVersion="1" />
   <component name="GradleSettings">
     <option name="linkedExternalProjectsSettings">
       <GradleProjectSettings>
@@ -18,15 +19,22 @@
         <option name="gradleJvm" value="#GRADLE_LOCAL_JAVA_HOME" />
         <option name="modules">
           <set>
-            <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/cloud_firestore-4.17.5/android" />
-            <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/firebase_auth-4.20.0/android" />
-            <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/firebase_core-2.32.0/android" />
-            <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/flutter_local_notifications-16.1.0/android" />
+            <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/firebase_auth-5.1.0/android" />
+            <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/firebase_core-3.1.0/android" />
+            <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/firebase_database-11.0.1/android" />
+            <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/firebase_storage-12.0.1/android" />
+            <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/flutter_local_notifications-16.3.3/android" />
             <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/flutter_native_timezone_updated_gradle-2.0.3/android" />
-            <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/google_sign_in_android-6.1.24/android" />
-            <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/path_provider_android-2.2.5/android" />
+            <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/flutter_plugin_android_lifecycle-2.0.20/android" />
+            <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/google_sign_in_android-6.1.25/android" />
+            <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/image_cropper-6.0.0/android" />
+            <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/image_picker_android-0.8.12+3/android" />
+            <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/path_provider_android-2.2.6/android" />
             <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/permission_handler_android-10.3.6/android" />
+            <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/sign_in_with_apple-6.1.1/android" />
             <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/sqflite-2.3.3+1/android" />
+            <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/url_launcher_android-6.3.3/android" />
+            <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/workmanager-0.5.2/android" />
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/app" />
             <option value="$USER_HOME$/development/flutter/packages/flutter_tools/gradle" />

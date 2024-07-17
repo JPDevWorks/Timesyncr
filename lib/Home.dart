@@ -3,11 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:timesyncr/Addevent.dart';
 import 'package:timesyncr/DashBoard.dart';
-import 'package:timesyncr/EventScreen.dart';
 import 'package:timesyncr/Profile.dart';
 import 'package:timesyncr/TimeTable.dart';
-import 'package:timesyncr/controller/task_controller.dart';
-import 'package:timesyncr/database/database_service.dart';
+import 'package:timesyncr/controller/newtask_controller.dart';
+import 'package:timesyncr/database/database.dart';
 import 'package:timesyncr/models/user.dart';
 import 'package:timesyncr/notificationpage.dart';
 import 'package:timesyncr/them_controler.dart';
@@ -30,14 +29,14 @@ class _Home extends State<Homepage> with SingleTickerProviderStateMixin {
   bool isSideMenuClosed = true;
   Userdetials? userr;
   final ThemeController themeController = Get.find();
-  final TaskController _taskController = Get.put(TaskController());
+  final NewTaskController _taskController = Get.put(NewTaskController());
   Userdetials? userProfile;
 
   @override
   void initState() {
     super.initState();
     _taskController.fetchtodayEvents();
-    count = TaskController().dateevents.length;
+    count = NewTaskController().dateevents.length;
     _animationController = AnimationController(
       vsync: this,
       duration: Duration(milliseconds: 300),
@@ -51,7 +50,7 @@ class _Home extends State<Homepage> with SingleTickerProviderStateMixin {
   }
 
   Future<void> getuser() async {
-    Userdetials? latestUser = await DatabaseService.userGet();
+    Userdetials? latestUser = await Databasee.userGet();
     if (latestUser != null && latestUser.status == 'Yes') {
       print('Email User : ${latestUser.email}');
       setState(() {
@@ -64,7 +63,7 @@ class _Home extends State<Homepage> with SingleTickerProviderStateMixin {
     if (userr == null) return;
 
     Userdetials? user =
-        await DatabaseService.getUserDetailsByEmail(userr!.email!.toString());
+        await Databasee.getUserDetailsByEmail(userr!.email!.toString());
     if (user != null) {
       setState(() {
         userProfile = user;
@@ -160,7 +159,7 @@ class _Home extends State<Homepage> with SingleTickerProviderStateMixin {
                                   color: themeController.isDarkTheme.value
                                       ? Colors.white
                                       : Colors.black,
-                                  fontSize: 20,
+                                  fontSize: 16,
                                 ),
                               ),
                               IconButton(
@@ -212,7 +211,7 @@ class _Home extends State<Homepage> with SingleTickerProviderStateMixin {
       }),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: Obx(() {
-        return _currentPageIndex == 0
+        return _currentPageIndex == 0 || _currentPageIndex == 1
             ? Container(
                 margin: EdgeInsets.only(top: 0),
                 child: FloatingActionButton(
@@ -228,7 +227,7 @@ class _Home extends State<Homepage> with SingleTickerProviderStateMixin {
                   },
                   child: Icon(Icons.add),
                   backgroundColor: themeController.isDarkTheme.value
-                      ? Colors.grey[800] // Color(0xFF0D6E6E)
+                      ? Colors.grey[900] // Color(0xFF0D6E6E)
                       : Colors.white,
                 ),
               )
@@ -271,12 +270,14 @@ class _Home extends State<Homepage> with SingleTickerProviderStateMixin {
                           GestureDetector(
                             onTap: () {},
                             child: Container(
-                              height: 100,
-                              width: 100,
+                              width: 100.0,
+                              height: 100.0,
                               decoration: BoxDecoration(
-                                color: Color.fromARGB(161, 158, 158, 158),
                                 shape: BoxShape.circle,
-                                image: userProfile?.profileImage != null
+                                color: Colors
+                                    .grey[200], // Background color for the icon
+                                image: (userProfile?.profileImage != null &&
+                                        userProfile!.profileImage != "Null")
                                     ? DecorationImage(
                                         fit: BoxFit.cover,
                                         image: NetworkImage(
@@ -284,15 +285,7 @@ class _Home extends State<Homepage> with SingleTickerProviderStateMixin {
                                       )
                                     : null,
                               ),
-                              child: Center(
-                                child: userProfile?.profileImage == null
-                                    ? Icon(
-                                        Icons.person_rounded,
-                                        color: Colors.black38,
-                                        size: 25,
-                                      )
-                                    : null,
-                              ),
+                              // If the image is available, no need to show the icon
                             ),
                           ),
                           IconButton(
@@ -441,7 +434,7 @@ class _Home extends State<Homepage> with SingleTickerProviderStateMixin {
                           : Colors.black,
                     )),
                 onTap: () {
-                  DatabaseService.deleteAllUsers();
+                  Databasee.deleteAllUsers();
                   FirebaseAuth.instance.signOut();
                   Get.offNamedUntil('/login', (route) => false);
                 },
@@ -489,24 +482,26 @@ class CustomBottomNavigationBar extends StatelessWidget {
               BottomNavigationBarItem(
                 icon: Icon(
                   Icons.dashboard,
+                  size: 30,
                   color: currentIndex == 0
                       ? themeController.isDarkTheme.value
                           ? Colors.white
                           : Colors.black
                       : Colors.grey,
                 ),
-                label: 'Dashboard',
+                label: '',
               ),
               BottomNavigationBarItem(
                 icon: Icon(
                   Icons.calendar_today,
+                  size: 30,
                   color: currentIndex == 1
                       ? themeController.isDarkTheme.value
                           ? Colors.white
                           : Colors.black
                       : Colors.grey,
                 ),
-                label: 'TimeTable',
+                label: '',
               ),
             ],
           ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:syncfusion_flutter_calendar/calendar.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:timesyncr/ViewEvent.dart';
 import 'package:timesyncr/controller/newtask_controller.dart';
@@ -36,6 +37,23 @@ class _MonthViewState extends State<MonthView> {
     _selectedEvents = [];
     _fetchEventsForSelectedDay();
     _events = _getEventMap();
+  }
+
+  void _onMonthTapped(DateTime selectedDate) {
+    if (selectedDate.isAfter(DateTime.now()) ||
+        (selectedDate.day == DateTime.now().day &&
+            selectedDate.month == DateTime.now().month &&
+            selectedDate.year == DateTime.now().year)) {
+      Navigator.pop(context);
+      Navigator.pushNamed(
+        context,
+        '/newEvent',
+        arguments: {
+          'initialStartDate': selectedDate,
+          'initialStartTime': TimeOfDay.fromDateTime(selectedDate),
+        },
+      );
+    }
   }
 
   Future<void> _fetchEventsForSelectedDay() async {
@@ -89,7 +107,6 @@ class _MonthViewState extends State<MonthView> {
           events[repeatDate]!.add(event.title);
         }
       }
-      
     }
 
     return events;
@@ -168,55 +185,58 @@ class _MonthViewState extends State<MonthView> {
     return SingleChildScrollView(
       child: Column(
         children: [
-          TableCalendar(
-            firstDay: DateTime.utc(2010, 10, 16),
-            lastDay: DateTime.utc(2030, 3, 14),
-            focusedDay: _focusedDay,
-            calendarFormat: _calendarFormat,
-            selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
-            onDaySelected: _onDaySelected,
-            eventLoader: _getEventsForDay,
-            calendarStyle: CalendarStyle(
-              todayDecoration: BoxDecoration(
-                color: widget.themeController.isDarkTheme.value
-                    ? Colors.black
-                    : Colors.black,
-                shape: BoxShape.circle,
+          GestureDetector(
+            onDoubleTap: () => _onMonthTapped(_selectedDay),
+            child: TableCalendar(
+              firstDay: DateTime.utc(2010, 10, 16),
+              lastDay: DateTime.utc(2030, 3, 14),
+              focusedDay: _focusedDay,
+              calendarFormat: _calendarFormat,
+              selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
+              onDaySelected: _onDaySelected,
+              eventLoader: _getEventsForDay,
+              calendarStyle: CalendarStyle(
+                todayDecoration: BoxDecoration(
+                  color: widget.themeController.isDarkTheme.value
+                      ? Colors.black
+                      : Colors.black,
+                  shape: BoxShape.circle,
+                ),
+                selectedDecoration: BoxDecoration(
+                  color: widget.themeController.isDarkTheme.value
+                      ? Colors.white60
+                      : Colors.grey,
+                  shape: BoxShape.circle,
+                ),
+                markerDecoration: BoxDecoration(
+                  color: Colors.red,
+                  shape: BoxShape.circle,
+                ),
+                markersMaxCount: 1, // Ensure only one dot is displayed
+                weekendTextStyle: TextStyle(
+                  color: widget.themeController.isDarkTheme.value
+                      ? Colors.white
+                      : Colors.black,
+                ),
+                outsideTextStyle: TextStyle(
+                  color: Colors.grey,
+                ),
+                defaultTextStyle: TextStyle(
+                  color: widget.themeController.isDarkTheme.value
+                      ? Colors.white
+                      : Colors.black,
+                ),
               ),
-              selectedDecoration: BoxDecoration(
-                color: widget.themeController.isDarkTheme.value
-                    ? Colors.white60
-                    : Colors.grey,
-                shape: BoxShape.circle,
-              ),
-              markerDecoration: BoxDecoration(
-                color: Colors.red,
-                shape: BoxShape.circle,
-              ),
-              markersMaxCount: 1, // Ensure only one dot is displayed
-              weekendTextStyle: TextStyle(
-                color: widget.themeController.isDarkTheme.value
-                    ? Colors.white
-                    : Colors.black,
-              ),
-              outsideTextStyle: TextStyle(
-                color: Colors.grey,
-              ),
-              defaultTextStyle: TextStyle(
-                color: widget.themeController.isDarkTheme.value
-                    ? Colors.white
-                    : Colors.black,
-              ),
-            ),
-            headerStyle: HeaderStyle(
-              formatButtonVisible: false,
-              titleCentered: true,
-              titleTextStyle: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 25,
-                color: widget.themeController.isDarkTheme.value
-                    ? Colors.white
-                    : Colors.black,
+              headerStyle: HeaderStyle(
+                formatButtonVisible: false,
+                titleCentered: true,
+                titleTextStyle: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 25,
+                  color: widget.themeController.isDarkTheme.value
+                      ? Colors.white
+                      : Colors.black,
+                ),
               ),
             ),
           ),
@@ -225,11 +245,11 @@ class _MonthViewState extends State<MonthView> {
             width: double.infinity,
             height: 50,
             color: widget.themeController.isDarkTheme.value
-                ? Colors.grey[800]
+                ? Colors.grey[900]
                 : Colors.black26, // Color(0xFFFF3D3D),
             child: Center(
               child: Text(
-                'Event Details - ${DateFormat('MMMM dd, yyyy').format(_selectedDay)}',
+                '${DateFormat('MMMM dd, yyyy').format(_selectedDay)}',
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,

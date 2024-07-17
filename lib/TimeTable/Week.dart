@@ -26,7 +26,7 @@ class WeekView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final DateTime now = DateTime.now();
-    final DateTime startOfDay = DateTime(now.year, now.month, now.day, 6, 20);
+    final DateTime startOfDay = DateTime(now.year, now.month, now.day, 6, 50);
 
     return SfCalendar(
       view: CalendarView.week,
@@ -46,6 +46,28 @@ class WeekView extends StatelessWidget {
       dataSource: dataSource,
       monthCellBuilder: monthCellBuilder,
       onTap: onTap,
+      appointmentBuilder:
+          (BuildContext context, CalendarAppointmentDetails details) {
+        final Appointment appointment = details.appointments.first;
+        return Container(
+          width: details.bounds.width,
+          height: details.bounds.height,
+          decoration: BoxDecoration(
+            color: appointment.color,
+            borderRadius: BorderRadius.circular(5),
+          ),
+          child: Text(
+            appointment.subject,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: Colors.black,
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        );
+      },
       timeSlotViewSettings: TimeSlotViewSettings(
         timeIntervalHeight: 50,
         timeTextStyle: TextStyle(

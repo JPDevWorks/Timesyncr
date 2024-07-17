@@ -113,7 +113,7 @@ class _AddPlanEventScreenState extends State<AddPlanEventScreen> {
           },
         ),
         title: Text(
-          'Plan Event',
+          'Prep Event',
           style: TextStyle(color: isDark ? Colors.white : Colors.black),
         ),
         backgroundColor: isDark ? Color(0xFF121212) : Colors.white,
@@ -146,14 +146,15 @@ class _AddPlanEventScreenState extends State<AddPlanEventScreen> {
                     _buildUneditableField('Notes', event.notes, isDark),
                     SizedBox(height: 20),
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         ElevatedButton(
                           onPressed: () {
                             _addPlanEvent(context, event);
                           },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.teal,
+                            backgroundColor:
+                                isDark ? Colors.white : Colors.black,
                             disabledBackgroundColor: Colors.white,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(20),
@@ -161,8 +162,13 @@ class _AddPlanEventScreenState extends State<AddPlanEventScreen> {
                             padding: EdgeInsets.symmetric(
                                 horizontal: 30, vertical: 15),
                           ),
-                          child: Text('Add Plan Event',
-                              style: TextStyle(fontSize: 18)),
+                          child: Center(
+                            child: Text('Add Prep Event',
+                                style: TextStyle(
+                                    fontSize: 18,
+                                    color:
+                                        isDark ? Colors.black : Colors.white)),
+                          ),
                         ),
                       ],
                     ),
@@ -197,20 +203,20 @@ class _AddPlanEventScreenState extends State<AddPlanEventScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text('All day event',
-                style: TextStyle(color: isDark ? Colors.white : Colors.black)),
-            Obx(() => Switch(
-                  value: controller.isAllDayEvent.value,
-                  onChanged: (value) {
-                    controller.isAllDayEvent.value = value;
-                  },
-                  activeColor: Colors.teal,
-                )),
-          ],
-        ),
+        // Row(
+        //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        //   children: [
+        //     Text('All day event',
+        //         style: TextStyle(color: isDark ? Colors.white : Colors.black)),
+        //     Obx(() => Switch(
+        //           value: controller.isAllDayEvent.value,
+        //           onChanged: (value) {
+        //             controller.isAllDayEvent.value = value;
+        //           },
+        //           activeColor: Colors.teal,
+        //         )),
+        //   ],
+        // ),
         Obx(() {
           if (!controller.isAllDayEvent.value) {
             return Column(
@@ -389,6 +395,7 @@ class _AddPlanEventScreenState extends State<AddPlanEventScreen> {
           spacing: 10,
           runSpacing: 10,
           children: [
+            _buildTag('Others', Color(0xFFD9EDF8)),
             _buildTag('FITNESS', Color(0xFFFFADAD)),
             _buildTag('ME TIME', Color(0xFFFFD6A5)),
             _buildTag('FAMILY', Color(0xFFD9EDF8)),

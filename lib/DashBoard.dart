@@ -249,7 +249,7 @@ class _DashboardState extends State<DashBoard> {
   }
 
   Widget _buildEventDetails(Event event) {
-    Color color = Color(event.color!);
+    Color color = Color(event.color);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 0.0),
       child: Container(

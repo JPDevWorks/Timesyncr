@@ -14,7 +14,7 @@ class NotificationService {
       FlutterLocalNotificationsPlugin();
 
   static final AndroidInitializationSettings androidSettings =
-      AndroidInitializationSettings('@mipmap/ic_launcher');
+      AndroidInitializationSettings('ic_notification');
 
   static final DarwinInitializationSettings iosSettings =
       DarwinInitializationSettings(
@@ -390,8 +390,10 @@ class NotificationService {
     );
   }
 
-   static Future<List<Map<String, String>>> getPendingNotificationDetails() async {
-    List<PendingNotificationRequest> pendingNotifications = await notificationsPlugin.pendingNotificationRequests();
+  static Future<List<Map<String, String>>>
+      getPendingNotificationDetails() async {
+    List<PendingNotificationRequest> pendingNotifications =
+        await notificationsPlugin.pendingNotificationRequests();
     print('Total pending notifications: ${pendingNotifications.length}');
 
     List<Map<String, String>> notificationDetails = [];

@@ -9,7 +9,8 @@ class GetStartedScreen extends StatelessWidget {
           Container(
             decoration: BoxDecoration(
               image: DecorationImage(
-                image: AssetImage("assets/getstarted.png"), // Add your background image
+                image: AssetImage(
+                    "assets/getstarted.png"), // Add your background image
                 fit: BoxFit.cover,
               ),
             ),
@@ -56,7 +57,7 @@ class GetStartedScreen extends StatelessWidget {
                     SizedBox(height: 20),
                     ElevatedButton(
                       onPressed: () {
-                        Navigator.pushNamed(context, '/signup');
+                        Navigator.pushNamed(context, '/login');
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.white,
@@ -64,7 +65,8 @@ class GetStartedScreen extends StatelessWidget {
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(30.0),
                         ),
-                        padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 50, vertical: 15),
                       ),
                       child: Text(
                         'Get Started',

@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:timesyncr/Home.dart'; // Import the homepage
 import 'package:timesyncr/Formheader.dart';
-import 'package:timesyncr/database/database_service.dart';
+import 'package:timesyncr/database/database.dart';
 import 'package:timesyncr/models/user.dart';
 import 'package:firebase_database/firebase_database.dart';
 
@@ -26,16 +26,16 @@ class _SignUpScreenState extends State<SignUpScreen> {
           child: Container(
             padding: const EdgeInsets.all(20.0),
             child: Column(
-              children: [
-                const FormHeaderWidget(
+              children: const [
+                FormHeaderWidget(
                   image: 'assets/timesyncr_512px.png',
                   heightBetween: 35,
                   title: 'Sign Up',
                   subTitle: 'Create a new account',
                   imageHeight: 0.12,
                 ),
-                const SignUpFormWidget(),
-                const SignUpFooterWidget(),
+                SignUpFormWidget(),
+                SignUpFooterWidget(),
               ],
             ),
           ),
@@ -53,95 +53,82 @@ class SignUpFormWidget extends StatefulWidget {
 }
 
 class _SignUpFormWidgetState extends State<SignUpFormWidget> {
-  String email = "";
-  String password = "";
-  String name = "";
-  String phone = "";
+  TextEditingController emailController = TextEditingController();
+  TextEditingController passwordController = TextEditingController();
+  TextEditingController nameController = TextEditingController();
+  TextEditingController phoneController = TextEditingController();
   String countryCode = "+91";
   bool _obscureText = true;
-
-  TextEditingController emailcontroller = TextEditingController();
-  TextEditingController passwordcontroller = TextEditingController();
-  TextEditingController namecontroller = TextEditingController();
-  TextEditingController phonecontroller = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
-  Future<void> registration() async {
-    showLoadingDialog(); // Show loading dialog
-    try {
-      UserCredential userCredential = await FirebaseAuth.instance
-          .createUserWithEmailAndPassword(email: email, password: password);
-
-      User? firebaseUser = userCredential.user;
-      if (firebaseUser != null) {
-        String userId = firebaseUser.uid; // Retrieve the UID
-
-        Userdetials user = Userdetials(
-            name: namecontroller.text,
-            email: emailcontroller.text,
-            phonenumber: '$countryCode${phonecontroller.text}',
-            password: passwordcontroller.text,
-            status: "Yes",
-            profileImage: "Null");
-        if (await DatabaseService.userAdd(user)) {
-          print("User added");
-        }
-
-        // Store user data in Firestore using the UID
-        Map<String, dynamic> userInfoMap = {
-          "email": user.email,
-          "name": user.name,
-          "phonenumber": user.phonenumber,
-          "password": user.password,
-          "status": user.status,
-          "profileImage": user.profileImage,
-        };
-        DatabaseReference userRef =
-            FirebaseDatabase.instance.ref().child('Users').child(userId);
-        await userRef.set({
-          "email": user.email,
-          "name": user.name,
-          "phonenumber": user.phonenumber,
-          "password": user.password,
-          "status": user.status,
-          "profileImage": user.profileImage
-        });
-
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text(
-            "Registered Successfully",
-            style: TextStyle(fontSize: 20.0),
+  Future<void> registerUser() async {
+    if (!_formKey.currentState!.validate()) {
+      return; // If validation fails, exit the function.
+    }
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) => const Dialog(
+        child: Padding(
+          padding: EdgeInsets.all(20),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircularProgressIndicator(),
+              SizedBox(width: 20),
+              Text("Registering... Please wait"),
+            ],
           ),
-        ));
+        ),
+      ),
+    );
 
+    try {
+      UserCredential userCredential =
+          await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: emailController.text.trim(),
+        password: passwordController.text.trim(),
+      );
+      final user = Userdetials(
+        name: nameController.text.trim(),
+        email: emailController.text.trim(),
+        phonenumber: '$countryCode${phoneController.text.trim()}',
+        password: passwordController.text.trim(),
+        status: "Yes",
+        profileImage: "Null",
+      );
+      // Assuming 'Databasee.userAdd' and 'FirebaseDatabase' integration is correct
+      if (await Databasee.userAdd(user)) {
+        DatabaseReference userRef = FirebaseDatabase.instance
+            .ref()
+            .child('Users')
+            .child(userCredential.user!.uid);
+        await userRef.set(user.toJson());
+        Navigator.pop(context); // Close the loading dialog
         Navigator.pushReplacementNamed(context, '/home');
       }
     } on FirebaseAuthException catch (e) {
-      String message = "";
-      if (e.code == 'weak-password') {
-        message = "Password provided is too weak.";
-      } else if (e.code == 'email-already-in-use') {
-        message = "Account already exists.";
-      } else {
-        message = "An error occurred. Please try again.";
+      Navigator.pop(context);
+      String errorMessage =
+          'An unexpected error occurred. Please try again later.';
+      if (e.code.contains('weak-password')) {
+        errorMessage = 'The password provided is too weak.';
+      } else if (e.code.contains('email-already-in-use')) {
+        errorMessage =
+            'The email address is already in use by another account.';
       }
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          backgroundColor: Colors.orangeAccent,
-          content: Text(
-            message,
-            style: TextStyle(fontSize: 18.0),
-          ),
+          content: Text(errorMessage),
+          backgroundColor: Colors.redAccent,
         ),
       );
-    } finally {
-      Navigator.pop(context); // Hide loading dialog
     }
   }
 
   String? validateEmail(String? value) {
     if (value == null || value.isEmpty) {
-      return 'Please Enter Email';
+      return 'Please enter your email';
     }
     final emailRegExp = RegExp(r'^[^@]+@[^@]+\.[^@]+');
     if (!emailRegExp.hasMatch(value)) {
@@ -152,35 +139,12 @@ class _SignUpFormWidgetState extends State<SignUpFormWidget> {
 
   String? validatePhone(String? value) {
     if (value == null || value.isEmpty) {
-      return 'Please Enter phone number';
+      return 'Please enter your phone number';
     }
-    final phoneRegExp = RegExp(r'^\+?[0-9]{10,15}$');
-    if (!phoneRegExp.hasMatch(value)) {
+    if (!RegExp(r'^\+?[0-9]{10,15}$').hasMatch(value)) {
       return 'Please enter a valid phone number';
     }
     return null;
-  }
-
-  void showLoadingDialog() {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return Dialog(
-          child: Container(
-            padding: EdgeInsets.all(20),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                CircularProgressIndicator(),
-                SizedBox(width: 20),
-                Text("Loading..."),
-              ],
-            ),
-          ),
-        );
-      },
-    );
   }
 
   @override
@@ -193,27 +157,28 @@ class _SignUpFormWidgetState extends State<SignUpFormWidget> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             TextFormField(
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please Enter Name';
-                }
-                return null;
-              },
-              controller: namecontroller,
+              validator: (value) => value == null || value.isEmpty
+                  ? 'Please enter your name'
+                  : null,
+              controller: nameController,
               decoration: const InputDecoration(
-                label: Text('Full Name'),
-                prefixIcon: Icon(Icons.person_outline_rounded),
-                border: OutlineInputBorder(), // Add border
+                labelText: 'Full Name',
+                prefixIcon: Icon(Icons.person_outline),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(25.0)),
+                ),
               ),
             ),
             const SizedBox(height: 20.0),
             TextFormField(
               validator: validateEmail,
-              controller: emailcontroller,
+              controller: emailController,
               decoration: const InputDecoration(
-                label: Text('Email'),
+                labelText: 'Email',
                 prefixIcon: Icon(Icons.email_outlined),
-                border: OutlineInputBorder(), // Add border
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(25.0)),
+                ),
               ),
             ),
             const SizedBox(height: 20.0),
@@ -225,22 +190,24 @@ class _SignUpFormWidgetState extends State<SignUpFormWidget> {
                       countryCode = country.dialCode!;
                     });
                   },
-                  initialSelection: 'IN',
-                  favorite: ['+91', 'IN'],
+                  initialSelection: 'US',
+                  favorite: const ['+91', 'IN'],
                   showCountryOnly: false,
                   showOnlyCountryWhenClosed: false,
                   alignLeft: false,
+                  showDropDownButton: true,
+                  padding: EdgeInsets.zero,
                 ),
-                const SizedBox(width: 10.0),
                 Expanded(
-                  flex: 5,
                   child: TextFormField(
                     validator: validatePhone,
-                    controller: phonecontroller,
+                    controller: phoneController,
                     decoration: const InputDecoration(
-                      label: Text('Phone No'),
-                      prefixIcon: Icon(Icons.numbers),
-                      border: OutlineInputBorder(), // Add border
+                      labelText: 'Phone No',
+                      prefixIcon: Icon(Icons.phone),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(25.0)),
+                      ),
                     ),
                   ),
                 ),
@@ -248,46 +215,33 @@ class _SignUpFormWidgetState extends State<SignUpFormWidget> {
             ),
             const SizedBox(height: 20.0),
             TextFormField(
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please Enter Password';
-                }
-                return null;
-              },
-              controller: passwordcontroller,
+              validator: (value) => value == null || value.isEmpty
+                  ? 'Please enter a password'
+                  : null,
+              controller: passwordController,
               obscureText: _obscureText,
               decoration: InputDecoration(
-                label: const Text('Password'),
+                labelText: 'Password',
                 prefixIcon: const Icon(Icons.fingerprint),
                 suffixIcon: IconButton(
                   icon: Icon(
-                    _obscureText ? Icons.visibility : Icons.visibility_off,
-                  ),
+                      _obscureText ? Icons.visibility : Icons.visibility_off),
                   onPressed: () {
                     setState(() {
                       _obscureText = !_obscureText;
                     });
                   },
                 ),
-                border: const OutlineInputBorder(), // Add border
+                border: const OutlineInputBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(25.0)),
+                ),
               ),
             ),
             const SizedBox(height: 20.0),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: () {
-                  if (_formKey.currentState!.validate()) {
-                    setState(() {
-                      email = emailcontroller.text;
-                      name = namecontroller.text;
-                      password = passwordcontroller.text;
-                      phone = phonecontroller.text;
-                    });
-
-                    registration();
-                  }
-                },
+                onPressed: registerUser,
                 child: const Text('SIGN UP'),
               ),
             )
@@ -306,32 +260,19 @@ class SignUpFooterWidget extends StatelessWidget {
     return Column(
       children: [
         const Text("OR"),
-        // SizedBox(
-        //   width: double.infinity,
-        //   child: OutlinedButton.icon(
-        //     onPressed: () {
-        //       // Implement the sign-in with Google logic here
-        //     },
-        //     icon: const Image(
-        //       image: AssetImage(
-        //           'assets/google.png'), // Update with the actual image path
-        //       width: 20.0,
-        //     ),
-        //     label: const Text('SIGN IN WITH GOOGLE'),
-        //   ),
-        // ),
         TextButton(
           onPressed: () {
             Navigator.pushNamed(context, '/login');
           },
           child: Text.rich(
             TextSpan(
-              children: [
+              text: 'Already have an account? ',
+              style: Theme.of(context).textTheme.bodyLarge,
+              children: const [
                 TextSpan(
-                  text: 'Already have an account? ',
-                  style: Theme.of(context).textTheme.bodyLarge,
-                ),
-                const TextSpan(text: 'LOGIN')
+                    text: 'Login',
+                    style: TextStyle(
+                        color: Colors.deepPurple, fontWeight: FontWeight.bold))
               ],
             ),
           ),
