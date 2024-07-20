@@ -20,24 +20,27 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Scaffold(
-        body: SingleChildScrollView(
-          child: Container(
-            padding: const EdgeInsets.all(20.0),
-            child: Column(
-              children: const [
-                FormHeaderWidget(
-                  image: 'assets/timesyncr_512px.png',
-                  heightBetween: 35,
-                  title: 'Sign Up',
-                  subTitle: 'Create a new account',
-                  imageHeight: 0.12,
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: Center(
+        child: SingleChildScrollView(
+          padding: EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Image.asset('assets/login_lc.png',
+                  fit: BoxFit.fill, height: 130, width: 220),
+              SizedBox(height: 30),
+              Text(
+                '',
+                style: TextStyle(
+                  fontSize: 20,
+                  color: Colors.black54,
                 ),
-                SignUpFormWidget(),
-                SignUpFooterWidget(),
-              ],
-            ),
+              ),
+              SignUpFormWidget(),
+              SignUpFooterWidget(),
+            ],
           ),
         ),
       ),
@@ -156,84 +159,140 @@ class _SignUpFormWidgetState extends State<SignUpFormWidget> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            TextFormField(
-              validator: (value) => value == null || value.isEmpty
-                  ? 'Please enter your name'
-                  : null,
-              controller: nameController,
-              decoration: const InputDecoration(
-                labelText: 'Full Name',
-                prefixIcon: Icon(Icons.person_outline),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(25.0)),
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black26,
+                    blurRadius: 6,
+                    offset: Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: TextFormField(
+                validator: (value) => value == null || value.isEmpty
+                    ? 'Please enter your name'
+                    : null,
+                controller: nameController,
+                style: TextStyle(fontSize: 20),
+                decoration: InputDecoration(
+                  prefixIcon: Icon(Icons.person_outline),
+                  border: InputBorder.none,
+                  contentPadding:
+                      EdgeInsets.symmetric(vertical: 20, horizontal: 20),
+                  hintText: 'Full Name',
                 ),
               ),
             ),
             const SizedBox(height: 20.0),
-            TextFormField(
-              validator: validateEmail,
-              controller: emailController,
-              decoration: const InputDecoration(
-                labelText: 'Email',
-                prefixIcon: Icon(Icons.email_outlined),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(25.0)),
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black26,
+                    blurRadius: 6,
+                    offset: Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: TextFormField(
+                validator: validateEmail,
+                controller: emailController,
+                style: TextStyle(fontSize: 20),
+                decoration: InputDecoration(
+                  prefixIcon: Icon(Icons.email_outlined),
+                  border: InputBorder.none,
+                  contentPadding:
+                      EdgeInsets.symmetric(vertical: 20, horizontal: 20),
+                  hintText: 'Email',
                 ),
               ),
             ),
             const SizedBox(height: 20.0),
-            Row(
-              children: [
-                CountryCodePicker(
-                  onChanged: (country) {
-                    setState(() {
-                      countryCode = country.dialCode!;
-                    });
-                  },
-                  initialSelection: 'US',
-                  favorite: const ['+91', 'IN'],
-                  showCountryOnly: false,
-                  showOnlyCountryWhenClosed: false,
-                  alignLeft: false,
-                  showDropDownButton: true,
-                  padding: EdgeInsets.zero,
-                ),
-                Expanded(
-                  child: TextFormField(
-                    validator: validatePhone,
-                    controller: phoneController,
-                    decoration: const InputDecoration(
-                      labelText: 'Phone No',
-                      prefixIcon: Icon(Icons.phone),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.all(Radius.circular(25.0)),
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black26,
+                    blurRadius: 6,
+                    offset: Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Row(
+                children: [
+                  CountryCodePicker(
+                    onChanged: (country) {
+                      setState(() {
+                        countryCode = country.dialCode!;
+                      });
+                    },
+                    initialSelection: 'US',
+                    favorite: const ['+91', 'IN'],
+                    showCountryOnly: false,
+                    showOnlyCountryWhenClosed: false,
+                    alignLeft: false,
+                    showDropDownButton: true,
+                    padding: EdgeInsets.zero,
+                  ),
+                  Expanded(
+                    child: TextFormField(
+                      validator: validatePhone,
+                      controller: phoneController,
+                      style: TextStyle(fontSize: 20),
+                      decoration: InputDecoration(
+                        prefixIcon: Icon(Icons.phone),
+                        border: InputBorder.none,
+                        contentPadding:
+                            EdgeInsets.symmetric(vertical: 20, horizontal: 20),
+                        hintText: 'Phone No',
                       ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
             const SizedBox(height: 20.0),
-            TextFormField(
-              validator: (value) => value == null || value.isEmpty
-                  ? 'Please enter a password'
-                  : null,
-              controller: passwordController,
-              obscureText: _obscureText,
-              decoration: InputDecoration(
-                labelText: 'Password',
-                prefixIcon: const Icon(Icons.fingerprint),
-                suffixIcon: IconButton(
-                  icon: Icon(
-                      _obscureText ? Icons.visibility : Icons.visibility_off),
-                  onPressed: () {
-                    setState(() {
-                      _obscureText = !_obscureText;
-                    });
-                  },
-                ),
-                border: const OutlineInputBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(25.0)),
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black26,
+                    blurRadius: 6,
+                    offset: Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: TextFormField(
+                validator: (value) => value == null || value.isEmpty
+                    ? 'Please enter a password'
+                    : null,
+                controller: passwordController,
+                obscureText: _obscureText,
+                style: TextStyle(fontSize: 20),
+                decoration: InputDecoration(
+                  prefixIcon: const Icon(Icons.fingerprint),
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                        _obscureText ? Icons.visibility : Icons.visibility_off),
+                    onPressed: () {
+                      setState(() {
+                        _obscureText = !_obscureText;
+                      });
+                    },
+                  ),
+                  border: InputBorder.none,
+                  contentPadding:
+                      EdgeInsets.symmetric(vertical: 20, horizontal: 20),
+                  hintText: 'Password',
                 ),
               ),
             ),
@@ -242,9 +301,23 @@ class _SignUpFormWidgetState extends State<SignUpFormWidget> {
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: registerUser,
-                child: const Text('SIGN UP'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.black, // Change button color to black
+                  padding: EdgeInsets.symmetric(vertical: 15),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: const Text(
+                  'SIGN UP',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
               ),
-            )
+            ),
           ],
         ),
       ),
@@ -272,7 +345,7 @@ class SignUpFooterWidget extends StatelessWidget {
                 TextSpan(
                     text: 'Login',
                     style: TextStyle(
-                        color: Colors.deepPurple, fontWeight: FontWeight.bold))
+                        color: Colors.black, fontWeight: FontWeight.bold))
               ],
             ),
           ),

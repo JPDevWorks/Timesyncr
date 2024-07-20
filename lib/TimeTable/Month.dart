@@ -240,27 +240,7 @@ class _MonthViewState extends State<MonthView> {
               ),
             ),
           ),
-          const SizedBox(height: 8.0),
-          Container(
-            width: double.infinity,
-            height: 50,
-            color: widget.themeController.isDarkTheme.value
-                ? Colors.grey[900]
-                : Colors.black26, // Color(0xFFFF3D3D),
-            child: Center(
-              child: Text(
-                '${DateFormat('MMMM dd, yyyy').format(_selectedDay)}',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: widget.themeController.isDarkTheme.value
-                      ? Colors.white
-                      : Colors.black,
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 8.0),
+          const Divider(), // Add a line separator
           Obx(() {
             return ListView.builder(
               shrinkWrap: true,

@@ -18,7 +18,7 @@ class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
       await FirebaseAuth.instance
           .sendPasswordResetEmail(email: emailController.text);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        const SnackBar(
           backgroundColor: Colors.green,
           content: Text(
             'Password reset email sent!',
@@ -36,7 +36,7 @@ class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
           backgroundColor: Colors.redAccent,
           content: Text(
             message,
-            style: TextStyle(fontSize: 18.0),
+            style: const TextStyle(fontSize: 18.0),
           ),
         ),
       );
@@ -47,71 +47,117 @@ class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
-        body: SingleChildScrollView(
-          child: Container(
-            padding: const EdgeInsets.all(20.0),
-            child: Column(
-              children: [
-                const FormHeaderWidget(
-                  image: 'assets/7.png', // Update with the actual image path
-                  title: 'Forgot Password',
-                  subTitle: 'Enter your email to reset your password',
-                  imageHeight: 0.15,
-                ),
-                Form(
-                  key: _formKey,
-                  child: Column(
-                    children: [
-                      TextFormField(
-                        controller: emailController,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please Enter Email';
-                          }
-                          final emailRegExp = RegExp(r'^[^@]+@[^@]+\.[^@]+');
-                          if (!emailRegExp.hasMatch(value)) {
-                            return 'Please enter a valid email address';
-                          }
-                          return null;
-                        },
-                        decoration: const InputDecoration(
-                          label: Text('Email'),
-                          prefixIcon: Icon(Icons.email_outlined),
-                        ),
-                      ),
-                      const SizedBox(height: 20.0),
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          onPressed: () {
-                            if (_formKey.currentState!.validate()) {
-                              sendResetPasswordEmail();
-                            }
-                          },
-                          child: const Text('SEND RESET LINK'),
-                        ),
-                      ),
-                      const SizedBox(height: 20.0),
-                      TextButton(
-                        onPressed: () {
-                          Navigator.pushNamed(context, '/signup');
-                        },
-                        child: Text.rich(
-                          TextSpan(
-                            children: [
-                              TextSpan(
-                                text: 'Don\'t have an account? ',
-                                style: Theme.of(context).textTheme.bodyLarge,
+        body: Center(  // Use Center to vertically center the Column
+          child: SingleChildScrollView(
+            child: Container(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,  // Center items in the Column
+                children: [
+                  const FormHeaderWidget(
+                    image: 'assets/login_lc.png', // Update with the actual image path
+                    title: 'Forgot Password',
+                    subTitle: 'Enter your email to reset your password',
+                    imageHeight: 0.15,
+                  ),
+                  const SizedBox(height: 40),
+                  Form(
+                    key: _formKey,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                            boxShadow: const [
+                              BoxShadow(
+                                color: Colors.black26,
+                                blurRadius: 6,
+                                offset: Offset(0, 2),
                               ),
-                              const TextSpan(text: 'CREATE ACCOUNT'),
                             ],
                           ),
+                          child: TextFormField(
+                            controller: emailController,
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Please Enter Email';
+                              }
+                              final emailRegExp = RegExp(r'^[^@]+@[^@]+\.[^@]+');
+                              if (!emailRegExp.hasMatch(value)) {
+                                return 'Please enter a valid email address';
+                              }
+                              return null;
+                            },
+                            style: const TextStyle(fontSize: 20),
+                            decoration: const InputDecoration(
+                              prefixIcon: Icon(Icons.email_outlined),
+                              border: InputBorder.none,
+                              contentPadding: EdgeInsets.symmetric(
+                                  vertical: 20, horizontal: 20),
+                              hintText: 'Email',
+                            ),
+                          ),
                         ),
-                      ),
-                    ],
+                        const SizedBox(height: 20.0),
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            onPressed: () {
+                              if (_formKey.currentState!.validate()) {
+                                sendResetPasswordEmail();
+                              }
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.black,
+                              padding: const EdgeInsets.symmetric(vertical: 15),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            child: const Text(
+                              'SEND RESET LINK',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 20.0),
+                        TextButton(
+                          onPressed: () {
+                            Navigator.pushNamed(context, '/signup');
+                          },
+                          child: const Text.rich(
+                            TextSpan(
+                              children: [
+                                TextSpan(
+                                  text: 'Don\'t have an account? ',
+                                  style: TextStyle(
+                                    color: Colors.black54,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                                TextSpan(
+                                  text: 'CREATE ACCOUNT',
+                                  style: TextStyle(
+                                    color: Colors.black,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 18,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
