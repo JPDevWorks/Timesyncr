@@ -120,7 +120,7 @@ class _ViewEventState extends State<ViewEvent> {
                 content: widget.event.repetitiveEvent.toString(),
               ),
               _buildTimeLeftCard(),
-              SizedBox(height: 40),
+              const SizedBox(height: 40),
               Center(
                 child: ElevatedButton(
                   onPressed: () {
