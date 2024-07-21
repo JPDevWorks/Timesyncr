@@ -37,14 +37,14 @@ class GetStartedScreen extends StatelessWidget {
                       color: Colors.white,
                     ),
                     SizedBox(height: 20),
-                    Text(
-                      "Get Started",
-                      style: TextStyle(
-                        fontSize: 24,
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+                    // Text(
+                    //   "Get Started",
+                    //   style: TextStyle(
+                    //     fontSize: 24,
+                    //     color: Colors.white,
+                    //     fontWeight: FontWeight.bold,
+                    //   ),
+                    // ),
                     SizedBox(height: 10),
                     Text(
                       'Time scheduling turns chaos into order, making every minute count.',

@@ -109,8 +109,8 @@ class _LoginPageState extends State<NewLoginPage> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Image.asset('assets/timesyncr_512px.png',
-                  fit: BoxFit.fill, height: 100, width: 220),
+              Image.asset('assets/login_lc.png',
+                  fit: BoxFit.fill, height: 130, width: 220),
               SizedBox(height: 30),
               Text(
                 'Welcome back you\'ve been missed!',
@@ -202,7 +202,7 @@ class _LoginPageState extends State<NewLoginPage> {
                 child: ElevatedButton(
                   onPressed: _login,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Color(0xFFFF6B6B),
+                    backgroundColor: Colors.black,
                     padding: EdgeInsets.symmetric(vertical: 15),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -260,7 +260,7 @@ class _LoginPageState extends State<NewLoginPage> {
                     child: Text(
                       'Register now',
                       style: TextStyle(
-                          color: Colors.blue,
+                          color: Colors.redAccent,
                           fontWeight: FontWeight.bold,
                           fontSize: 18),
                     ),
