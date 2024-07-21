@@ -4,12 +4,12 @@ import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:timesyncr/Addevent.dart';
 import 'package:timesyncr/database/database.dart';
+import 'package:timesyncr/loginnew.dart';
 import 'package:workmanager/workmanager.dart';
 import 'Home.dart';
 import 'Profile.dart';
 import 'Settings.dart';
 import 'forgotpassword.dart';
-import 'loginscreen.dart';
 import 'models/user.dart';
 import 'Addevent.dart';
 import 'service/NotificationService.dart';
@@ -32,7 +32,7 @@ void main() async {
 
   await Workmanager().initialize(
     callbackDispatcher,
-    isInDebugMode: true,
+    isInDebugMode: false,
   );
 
   DateTime now = DateTime.now();

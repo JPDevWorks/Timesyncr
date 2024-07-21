@@ -7,7 +7,7 @@ class GetStartedScreen extends StatelessWidget {
       body: Stack(
         children: [
           Container(
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               image: DecorationImage(
                 image: AssetImage(
                     "assets/getstarted.png"), // Add your background image
@@ -19,7 +19,7 @@ class GetStartedScreen extends StatelessWidget {
             alignment: Alignment.bottomCenter,
             child: Container(
               height: 300,
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 color: Colors.black,
                 borderRadius: BorderRadius.only(
                   topLeft: Radius.circular(30),
@@ -36,17 +36,17 @@ class GetStartedScreen extends StatelessWidget {
                       width: 50,
                       color: Colors.white,
                     ),
-                    // const SizedBox(height: 20),
-                    // const Text(
-                    //   "Get Started",
-                    //   style: TextStyle(
-                    //     fontSize: 24,
-                    //     color: Colors.white,
-                    //     fontWeight: FontWeight.bold,
-                    //   ),
-                    // ),
-                    const SizedBox(height: 10),
-                    const Text(
+                    SizedBox(height: 20),
+                    Text(
+                      "Get Started",
+                      style: TextStyle(
+                        fontSize: 24,
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    SizedBox(height: 10),
+                    Text(
                       'Time scheduling turns chaos into order, making every minute count.',
                       textAlign: TextAlign.center,
                       style: TextStyle(
@@ -54,7 +54,7 @@ class GetStartedScreen extends StatelessWidget {
                         color: Colors.grey,
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    SizedBox(height: 20),
                     ElevatedButton(
                       onPressed: () {
                         Navigator.pushNamed(context, '/login');
@@ -66,9 +66,9 @@ class GetStartedScreen extends StatelessWidget {
                           borderRadius: BorderRadius.circular(30.0),
                         ),
                         padding:
-                            const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+                            EdgeInsets.symmetric(horizontal: 50, vertical: 15),
                       ),
-                      child: const Text(
+                      child: Text(
                         'Get Started',
                         style: TextStyle(
                           fontSize: 16,

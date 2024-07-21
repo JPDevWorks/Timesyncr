@@ -5,6 +5,7 @@ import 'package:timesyncr/Addevent.dart';
 import 'package:timesyncr/controller/newtask_controller.dart';
 import 'package:timesyncr/models/NewEvent.dart';
 import 'package:timesyncr/them_controler.dart';
+import 'package:uuid/uuid.dart';
 
 class AddPlanEventScreen extends StatefulWidget {
   final int eventId;
@@ -36,6 +37,8 @@ class _AddPlanEventScreenState extends State<AddPlanEventScreen> {
   }
 
   Future<void> _addPlanEvent(BuildContext context, Event event) async {
+    var uuid = Uuid();
+    String uniqueStr = uuid.v4();
     DateTime startDateTime = DateTime(
       controller.startDate.value.year,
       controller.startDate.value.month,
@@ -83,6 +86,7 @@ class _AddPlanEventScreenState extends State<AddPlanEventScreen> {
     event.endDate = DateFormat('dd-MM-yyyy').format(endDateTime);
     event.endTime = DateFormat('hh:mm a').format(endDateTime);
     event.planevent = "Yes";
+    event.uniquestr = uniqueStr;
     event.id = null;
     await taskController.addEvent(event);
 
@@ -109,7 +113,7 @@ class _AddPlanEventScreenState extends State<AddPlanEventScreen> {
             color: isDark ? Colors.white : Colors.black,
           ),
           onPressed: () {
-            Navigator.pop(context);
+            Navigator.pushNamed(context, '/home');
           },
         ),
         title: Text(

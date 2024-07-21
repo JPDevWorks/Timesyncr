@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:syncfusion_flutter_calendar/calendar.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:timesyncr/ViewEvent.dart';
 import 'package:timesyncr/controller/newtask_controller.dart';
@@ -22,7 +21,6 @@ class MonthView extends StatefulWidget {
 }
 
 class _MonthViewState extends State<MonthView> {
-  late List _selectedEvents;
   late CalendarFormat _calendarFormat;
   late DateTime _focusedDay;
   late DateTime _selectedDay;
@@ -34,9 +32,8 @@ class _MonthViewState extends State<MonthView> {
     _calendarFormat = CalendarFormat.month;
     _focusedDay = DateTime.now();
     _selectedDay = DateTime.now();
-    _selectedEvents = [];
-    _fetchEventsForSelectedDay();
     _events = _getEventMap();
+    _fetchEventsForSelectedDay();
   }
 
   void _onMonthTapped(DateTime selectedDate) {
@@ -57,10 +54,8 @@ class _MonthViewState extends State<MonthView> {
   }
 
   Future<void> _fetchEventsForSelectedDay() async {
-    await widget.taskController.fetchdateEvents(_selectedDay);
-    setState(() {
-      _selectedEvents = widget.taskController.dateevents;
-    });
+    await widget.taskController.fetcheventsbydate(_selectedDay);
+    setState(() {});
   }
 
   Map<DateTime, List> _getEventMap() {
@@ -69,7 +64,6 @@ class _MonthViewState extends State<MonthView> {
 
     for (var event in widget.taskController.events) {
       final eventDate = dateFormat.parse(event.startDate.toString());
-
       final normalizedDate =
           DateTime.utc(eventDate.year, eventDate.month, eventDate.day);
 
@@ -130,12 +124,11 @@ class _MonthViewState extends State<MonthView> {
       context: context,
       builder: (context) {
         return Container(
-          width: MediaQuery.of(context).size.width, // Full-width container
+          width: MediaQuery.of(context).size.width,
           padding: const EdgeInsets.all(16.0),
           child: Column(
             mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment:
-                CrossAxisAlignment.stretch, // Make buttons full-width
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Text(
                 event.title.toString().toUpperCase(),
@@ -148,12 +141,12 @@ class _MonthViewState extends State<MonthView> {
               const SizedBox(height: 8),
               ElevatedButton(
                 onPressed: () {
-                  Navigator.pop(context); // Close the bottom sheet
+                  Navigator.pop(context);
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => ViewEvent(
-                          event: event, color: color), // Pass color here
+                      builder: (context) =>
+                          ViewEvent(event: event, color: color),
                     ),
                   );
                 },
@@ -161,8 +154,7 @@ class _MonthViewState extends State<MonthView> {
                   backgroundColor: widget.themeController.isDarkTheme.value
                       ? Colors.white
                       : Colors.black,
-                  minimumSize: const Size(double.infinity,
-                      50), // Full-width button with fixed height
+                  minimumSize: const Size(double.infinity, 50),
                 ),
                 child: Text(
                   'View Event Details',
@@ -212,7 +204,7 @@ class _MonthViewState extends State<MonthView> {
                   color: Colors.red,
                   shape: BoxShape.circle,
                 ),
-                markersMaxCount: 1, // Ensure only one dot is displayed
+                markersMaxCount: 1,
                 weekendTextStyle: TextStyle(
                   color: widget.themeController.isDarkTheme.value
                       ? Colors.white
@@ -240,22 +232,53 @@ class _MonthViewState extends State<MonthView> {
               ),
             ),
           ),
-          const Divider(), // Add a line separator
+          const SizedBox(height: 8.0),
+          Container(
+            width: double.infinity,
+            height: 50,
+            color: widget.themeController.isDarkTheme.value
+                ? Colors.grey[900]
+                : Colors.black26,
+            child: Center(
+              child: Text(
+                '${DateFormat('MMMM dd, yyyy').format(_selectedDay)}',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: widget.themeController.isDarkTheme.value
+                      ? Colors.white
+                      : Colors.black,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 8.0),
           Obx(() {
             return ListView.builder(
               shrinkWrap: true,
               physics: NeverScrollableScrollPhysics(),
-              itemCount: widget.taskController.dateevents.length,
+              itemCount: widget.taskController.geteventsbydate.length,
               itemBuilder: (context, index) {
-                final event = widget.taskController.dateevents[index];
+                final event = widget.taskController.geteventsbydate[index];
                 final eventStartDate =
                     DateFormat('dd-MM-yyyy').parse(event.startDate);
                 final startTime = DateFormat('hh:mm a').parse(event.startTime);
                 final endTime = DateFormat('hh:mm a').parse(event.endTime);
                 Color color = Color(event.color);
 
-                if (eventStartDate.isBefore(_selectedDay) ||
-                    eventStartDate.isAtSameMomentAs(_selectedDay)) {
+                final normalizedEventStartDate = DateTime(
+                  eventStartDate.year,
+                  eventStartDate.month,
+                  eventStartDate.day,
+                );
+
+                final normalizedSelectedDay = DateTime(
+                  _selectedDay.year,
+                  _selectedDay.month,
+                  _selectedDay.day,
+                );
+
+                if (normalizedEventStartDate == normalizedSelectedDay) {
                   return GestureDetector(
                     onTap: () => _showBottomSheet(context, event, color),
                     child: Container(

@@ -11,12 +11,13 @@ import 'package:timesyncr/models/user.dart';
 import 'package:timesyncr/service/NotificationService.dart';
 
 class Databasee {
-  static const int _version = 1;
+  static const int _version = 2;
   static const String _dbname = "timesyncrdatabase";
 
   static Future<Database> getdb() async {
     return openDatabase(
       join(await getDatabasesPath(), _dbname),
+      version: _version,
       onCreate: (db, version) async {
         await db.execute('''
         CREATE TABLE Event (
@@ -34,7 +35,8 @@ class Databasee {
           planevent TEXT,
           isCompleted INTEGER,
           color INTEGER,
-          numberOfDays INTEGER
+          numberOfDays INTEGER,
+          uniquestr TEXT
         )
       ''');
 
@@ -50,7 +52,11 @@ class Databasee {
         )
       ''');
       },
-      version: _version,
+      onUpgrade: (db, oldVersion, newVersion) async {
+        if (oldVersion < newVersion) {
+          await db.execute('ALTER TABLE Event ADD COLUMN uniquestr TEXT');
+        }
+      },
     );
   }
 
@@ -189,6 +195,33 @@ class Databasee {
     });
   }
 
+  static Future<List<Event>> geteventbydate(DateTime selectedDate) async {
+    final List<Event> allEvents = await getEvents();
+    final DateFormat dateFormat = DateFormat('dd-MM-yyyy');
+    final String formattedDate = dateFormat.format(selectedDate);
+
+    List<Event> filteredEvents = allEvents.where((event) {
+      DateTime startDate = dateFormat.parse(event.startDate);
+      if (selectedDate.isAtSameMomentAs(startDate)) {
+        return true;
+      }
+      if (event.repetitiveEvent == 'Daily') {
+        return true;
+      }
+      if (event.repetitiveEvent == 'Weekly' &&
+          selectedDate.weekday == startDate.weekday) {
+        return true;
+      }
+      if (event.repetitiveEvent == 'Monthly' &&
+          selectedDate.day == startDate.day) {
+        return true;
+      }
+      return formattedDate == event.startDate;
+    }).toList();
+
+    return filteredEvents;
+  }
+
   static Future<List<Event>> getdateEvents(DateTime selectedDate) async {
     final List<Event> allEvents = await getEvents();
     final DateFormat dateFormat = DateFormat('dd-MM-yyyy');
@@ -268,21 +301,21 @@ class Databasee {
         print(notificationTime);
 
         Event dailyEvent = Event(
-          title: event.title,
-          location: event.location,
-          startDate: DateFormat('dd-MM-yyyy').format(notificationTime),
-          startTime: DateFormat('hh:mm a').format(notificationTime),
-          endDate: DateFormat('dd-MM-yyyy').format(notificationTime),
-          endTime: event.endTime,
-          isAllDayEvent: event.isAllDayEvent,
-          repetitiveEvent: event.repetitiveEvent,
-          selectedTag: event.selectedTag,
-          notes: event.notes,
-          color: event.color,
-          planevent: event.planevent,
-          isCompleted: event.isCompleted,
-          numberOfDays: event.numberOfDays,
-        );
+            title: event.title,
+            location: event.location,
+            startDate: DateFormat('dd-MM-yyyy').format(notificationTime),
+            startTime: DateFormat('hh:mm a').format(notificationTime),
+            endDate: event.endDate,
+            endTime: event.endTime,
+            isAllDayEvent: event.isAllDayEvent,
+            repetitiveEvent: event.repetitiveEvent,
+            selectedTag: event.selectedTag,
+            notes: event.notes,
+            color: event.color,
+            planevent: event.planevent,
+            isCompleted: event.isCompleted,
+            numberOfDays: event.numberOfDays,
+            uniquestr: event.uniquestr);
 
         int id = await db.insert(
           'Event',
@@ -301,21 +334,21 @@ class Databasee {
         print(notificationTime);
 
         Event weeklyEvent = Event(
-          title: event.title,
-          location: event.location,
-          startDate: DateFormat('dd-MM-yyyy').format(notificationTime),
-          startTime: DateFormat('hh:mm a').format(notificationTime),
-          endDate: DateFormat('dd-MM-yyyy').format(notificationTime),
-          endTime: event.endTime,
-          isAllDayEvent: event.isAllDayEvent,
-          repetitiveEvent: event.repetitiveEvent,
-          selectedTag: event.selectedTag,
-          notes: event.notes,
-          color: event.color,
-          planevent: event.planevent,
-          isCompleted: event.isCompleted,
-          numberOfDays: event.numberOfDays,
-        );
+            title: event.title,
+            location: event.location,
+            startDate: DateFormat('dd-MM-yyyy').format(notificationTime),
+            startTime: DateFormat('hh:mm a').format(notificationTime),
+            endDate: event.endDate,
+            endTime: event.endTime,
+            isAllDayEvent: event.isAllDayEvent,
+            repetitiveEvent: event.repetitiveEvent,
+            selectedTag: event.selectedTag,
+            notes: event.notes,
+            color: event.color,
+            planevent: event.planevent,
+            isCompleted: event.isCompleted,
+            numberOfDays: event.numberOfDays,
+            uniquestr: event.uniquestr);
 
         int id = await db.insert(
           'Event',
@@ -335,21 +368,21 @@ class Databasee {
         print(notificationTime);
 
         Event monthlyEvent = Event(
-          title: event.title,
-          location: event.location,
-          startDate: DateFormat('dd-MM-yyyy').format(notificationTime),
-          startTime: DateFormat('hh:mm a').format(notificationTime),
-          endDate: DateFormat('dd-MM-yyyy').format(notificationTime),
-          endTime: event.endTime,
-          isAllDayEvent: event.isAllDayEvent,
-          repetitiveEvent: event.repetitiveEvent,
-          selectedTag: event.selectedTag,
-          notes: event.notes,
-          color: event.color,
-          planevent: event.planevent,
-          isCompleted: event.isCompleted,
-          numberOfDays: event.numberOfDays,
-        );
+            title: event.title,
+            location: event.location,
+            startDate: DateFormat('dd-MM-yyyy').format(notificationTime),
+            startTime: DateFormat('hh:mm a').format(notificationTime),
+            endDate: event.endDate,
+            endTime: event.endTime,
+            isAllDayEvent: event.isAllDayEvent,
+            repetitiveEvent: event.repetitiveEvent,
+            selectedTag: event.selectedTag,
+            notes: event.notes,
+            color: event.color,
+            planevent: event.planevent,
+            isCompleted: event.isCompleted,
+            numberOfDays: event.numberOfDays,
+            uniquestr: event.uniquestr);
 
         int id = await db.insert(
           'Event',
@@ -488,22 +521,22 @@ class Databasee {
       return Event.fromMap(maps.first);
     }
     return Event(
-      id: null,
-      title: "null",
-      location: "null",
-      startDate: "null",
-      startTime: "null",
-      endDate: "null",
-      endTime: "null",
-      isAllDayEvent: false,
-      repetitiveEvent: "null",
-      selectedTag: "null",
-      notes: "null",
-      color: 0,
-      planevent: "null",
-      isCompleted: 0,
-      numberOfDays: 0,
-    );
+        id: null,
+        title: "null",
+        location: "null",
+        startDate: "null",
+        startTime: "null",
+        endDate: "null",
+        endTime: "null",
+        isAllDayEvent: false,
+        repetitiveEvent: "null",
+        selectedTag: "null",
+        notes: "null",
+        color: 0,
+        planevent: "null",
+        isCompleted: 0,
+        numberOfDays: 0,
+        uniquestr: "null");
   }
 
   static Future<Event> getSingleEvent(Event event) async {
@@ -515,36 +548,36 @@ class Databasee {
       return Event.fromMap(maps.first);
     }
     return Event(
-      id: null,
-      title: "null",
-      location: "null",
-      startDate: "null",
-      startTime: "null",
-      endDate: "null",
-      endTime: "null",
-      isAllDayEvent: false,
-      repetitiveEvent: "null",
-      selectedTag: "null",
-      notes: "null",
-      color: 0,
-      planevent: "null",
-      isCompleted: 0,
-      numberOfDays: 0,
-    );
+        id: null,
+        title: "null",
+        location: "null",
+        startDate: "null",
+        startTime: "null",
+        endDate: "null",
+        endTime: "null",
+        isAllDayEvent: false,
+        repetitiveEvent: "null",
+        selectedTag: "null",
+        notes: "null",
+        color: 0,
+        planevent: "null",
+        isCompleted: 0,
+        numberOfDays: 0,
+        uniquestr: "null");
   }
 
   // Update an existing event in the database
-  static Future<int> updateEvent(Event event) async {
-    DateTime dateTime = parseDateTime(event.startDate, event.startTime);
-    final db = await getdb();
-    await db.update(
-      'Event',
-      event.toMap(),
-      where: 'id = ?',
-      whereArgs: [event.id],
-    );
-    return event.id!;
-  }
+  // static Future<int> updateEvent(Event event) async {
+  //   DateTime dateTime = parseDateTime(event.startDate, event.startTime);
+  //   final db = await getdb();
+  //   await db.update(
+  //     'Event',
+  //     event.toMap(),
+  //     where: 'id = ?',
+  //     whereArgs: [event.id],
+  //   );
+  //   return event.id!;
+  // }
 
   static Future<void> updateeventdone(Event event) async {
     event.isCompleted = 1;
@@ -558,12 +591,41 @@ class Databasee {
     );
   }
 
-  static Future<int> deleteEvent(int? id) async {
-    Database db = await getdb();
+  static Future<int> updateEvent(Event event) async {
+    final db = await getdb();
+    List<Map<String, dynamic>> events = await db.query(
+      'Event',
+      where: 'uniquestr = ?',
+      whereArgs: [event.uniquestr],
+    );
+    for (var eventMap in events) {
+      Event currentEvent = Event.fromMap(eventMap);
+      await deleteEvents(currentEvent);
+    }
+    print(events);
+    int id = await insertEvent(event);
+    print(id);
+    return id;
+  }
 
-    NotificationService.notificationsPlugin.cancel(id!);
+  static Future<void> deleteEvents(Event event) async {
+    final db = await getdb();
+    NotificationService.notificationsPlugin.cancel(event.id!);
+    await db.delete('Event', where: 'id = ?', whereArgs: [event.id]);
+  }
 
-    return await db.delete('Event', where: 'id = ?', whereArgs: [id]);
+  static Future<int> deleteEvent(Event event) async {
+    final db = await getdb();
+    List<Map<String, dynamic>> events = await db.query(
+      'Event',
+      where: 'uniquestr = ?',
+      whereArgs: [event.uniquestr],
+    );
+    for (var eventMap in events) {
+      Event currentEvent = Event.fromMap(eventMap);
+      await deleteEvents(currentEvent);
+    }
+    return 1;
   }
 
   // static Future<void> deleteafterdate() async {

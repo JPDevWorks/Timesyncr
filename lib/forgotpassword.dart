@@ -33,7 +33,7 @@ class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
       }
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          backgroundColor: Colors.redAccent,
+          backgroundColor: Colors.white,
           content: Text(
             message,
             style: const TextStyle(fontSize: 18.0),

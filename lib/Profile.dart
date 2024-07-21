@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timesyncr/Home.dart';
 import 'package:timesyncr/database/database.dart';
 import 'package:timesyncr/models/user.dart';
@@ -22,6 +23,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Userdetials? userProfile;
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
+  final Future<SharedPreferences>prefs=SharedPreferences.getInstance();
   Uint8List? pickedImage;
   bool _isLoading = false;
 
@@ -32,6 +34,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> getUserProfile() async {
+    
     Userdetials? user = await Databasee.getUserDetailsByEmail(widget.userId);
     if (user != null) {
       setState(() {

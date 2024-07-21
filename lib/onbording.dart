@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:timesyncr/loginscreen.dart';
+
 
 class OnBoarding extends StatefulWidget {
   const OnBoarding({Key? key}) : super(key: key);

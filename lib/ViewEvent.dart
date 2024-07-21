@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:timesyncr/Home.dart';
 import 'package:timesyncr/controller/newtask_controller.dart';
 import 'package:timesyncr/editevent.dart';
 import 'package:timesyncr/models/NewEvent.dart';
@@ -39,7 +40,10 @@ class _ViewEventState extends State<ViewEvent> {
               child: Text('Yes'),
               onPressed: () {
                 task.deleteEvent(widget.event);
-                Navigator.pushNamed(context, '/home');
+                Navigator.of(context).pushAndRemoveUntil(
+                  MaterialPageRoute(builder: (context) => Homepage()),
+                  (Route<dynamic> route) => false,
+                );
               },
             ),
           ],

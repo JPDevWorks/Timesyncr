@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:intl/intl.dart';
 import 'package:timesyncr/database/database.dart';
 import 'package:timesyncr/models/NewEvent.dart';
@@ -6,6 +7,7 @@ import 'package:timesyncr/models/NewEvent.dart';
 class NewTaskController extends GetxController {
   var events = <Event>[].obs;
   var dateevents = <Event>[].obs;
+  var geteventsbydate = <Event>[].obs;
 
   @override
   void onInit() {
@@ -26,6 +28,10 @@ class NewTaskController extends GetxController {
     dateevents.value = await Databasee.getdateEvents(selectedDate);
   }
 
+  Future<void> fetcheventsbydate(DateTime selectedDate) async {
+    geteventsbydate.value = await Databasee.geteventbydate(selectedDate);
+  }
+
   Future<int> addEvent(Event event) async {
     int id = await Databasee.insertEvent(event);
     await fetchEvents();
@@ -39,10 +45,9 @@ class NewTaskController extends GetxController {
   // }
 
   void deleteEvent(Event event) async {
-    await Databasee.deleteEvent(event.id);
-
-    events.removeWhere((e) => e.id == event.id);
-    dateevents.removeWhere((e) => e.id == event.id);
+    await Databasee.deleteEvent(event);
+    await fetchEvents();
+    await fetchtodayEvents();
   }
 
   Future<Event> getEventsByIdonly(int id) async {
@@ -51,22 +56,22 @@ class NewTaskController extends GetxController {
     } catch (e) {
       print('Error fetching events: $e');
       return Event(
-        id: null,
-        title: "null",
-        location: "null",
-        startDate: "null",
-        startTime: "null",
-        endDate: "null",
-        endTime: "null",
-        isAllDayEvent: false,
-        repetitiveEvent: "null",
-        selectedTag: "null",
-        notes: "null",
-        color: 0,
-        planevent: "null",
-        isCompleted: 0,
-        numberOfDays: 0,
-      );
+          id: null,
+          title: "null",
+          location: "null",
+          startDate: "null",
+          startTime: "null",
+          endDate: "null",
+          endTime: "null",
+          isAllDayEvent: false,
+          repetitiveEvent: "null",
+          selectedTag: "null",
+          notes: "null",
+          color: 0,
+          planevent: "null",
+          isCompleted: 0,
+          numberOfDays: 0,
+          uniquestr: "null");
     }
   }
 
@@ -76,27 +81,29 @@ class NewTaskController extends GetxController {
     } catch (e) {
       print('Error fetching events: $e');
       return Event(
-        id: null,
-        title: "null",
-        location: "null",
-        startDate: "null",
-        startTime: "null",
-        endDate: "null",
-        endTime: "null",
-        isAllDayEvent: false,
-        repetitiveEvent: "null",
-        selectedTag: "null",
-        notes: "null",
-        color: 0,
-        planevent: "null",
-        isCompleted: 0,
-        numberOfDays: 0,
-      );
+          id: null,
+          title: "null",
+          location: "null",
+          startDate: "null",
+          startTime: "null",
+          endDate: "null",
+          endTime: "null",
+          isAllDayEvent: false,
+          repetitiveEvent: "null",
+          selectedTag: "null",
+          notes: "null",
+          color: 0,
+          planevent: "null",
+          isCompleted: 0,
+          numberOfDays: 0,
+          uniquestr: "null");
     }
   }
 
   Future<int> updateEvent(Event event) async {
-    return await Databasee.updateEvent(event);
+    int id = await Databasee.updateEvent(event);
+    await fetchEvents();
+    return id;
   }
 
   Future<void> updateeventdone(Event event) async {

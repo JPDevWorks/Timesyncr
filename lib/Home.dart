@@ -1,12 +1,14 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timesyncr/Addevent.dart';
 import 'package:timesyncr/DashBoard.dart';
 import 'package:timesyncr/Profile.dart';
 import 'package:timesyncr/TimeTable.dart';
 import 'package:timesyncr/controller/newtask_controller.dart';
 import 'package:timesyncr/database/database.dart';
+import 'package:timesyncr/main.dart';
 import 'package:timesyncr/models/user.dart';
 import 'package:timesyncr/notificationpage.dart';
 import 'package:timesyncr/them_controler.dart';
@@ -22,6 +24,7 @@ class Homepage extends StatefulWidget {
 class _Home extends State<Homepage> with SingleTickerProviderStateMixin {
   final PageController _pageController = PageController();
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
   late AnimationController _animationController;
   late Animation<double> _animation;
   int _currentPageIndex = 0;
@@ -50,7 +53,10 @@ class _Home extends State<Homepage> with SingleTickerProviderStateMixin {
   }
 
   Future<void> getuser() async {
-    Userdetials? latestUser = await Databasee.userGet();
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final String? email = prefs.getString('email');
+    print(email);
+    Userdetials? latestUser = await Databasee.getUserDetailsByEmail(email!);
     if (latestUser != null && latestUser.status == 'Yes') {
       print('Email User : ${latestUser.email}');
       setState(() {
@@ -153,6 +159,9 @@ class _Home extends State<Homepage> with SingleTickerProviderStateMixin {
                                   ),
                                 ],
                               ),
+                              SizedBox(
+                                width: 10,
+                              ),
                               Text(
                                 'TIMESYNCR',
                                 style: TextStyle(
@@ -162,22 +171,43 @@ class _Home extends State<Homepage> with SingleTickerProviderStateMixin {
                                   fontSize: 16,
                                 ),
                               ),
-                              IconButton(
-                                icon: Icon(
-                                  Icons.notifications,
-                                  color: themeController.isDarkTheme.value
-                                      ? Colors.white
-                                      : Colors.black,
-                                ),
-                                onPressed: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) =>
-                                          PendingNotificationsPage(),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  IconButton(
+                                    icon: Icon(
+                                      Icons.replay_outlined,
+                                      color: themeController.isDarkTheme.value
+                                          ? Colors.white
+                                          : Colors.black,
                                     ),
-                                  );
-                                },
+                                    onPressed: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => Homepage(),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                  IconButton(
+                                    icon: Icon(
+                                      Icons.notifications,
+                                      color: themeController.isDarkTheme.value
+                                          ? Colors.white
+                                          : Colors.black,
+                                    ),
+                                    onPressed: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              PendingNotificationsPage(),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ],
                               ),
                             ],
                           ),

@@ -6,6 +6,7 @@ import 'package:timesyncr/Home.dart';
 import 'package:timesyncr/models/NewEvent.dart';
 import 'package:timesyncr/them_controler.dart';
 import 'package:timesyncr/controller/newtask_controller.dart';
+import 'package:uuid/uuid.dart';
 
 class NewEventController extends GetxController {
   var isAllDayEvent = false.obs;
@@ -152,26 +153,30 @@ class _NewEventScreenState extends State<NewEventScreen> {
 
     if (controller.isAllDayEvent.value ||
         (startDateTime.isAfter(now) && endDateTime.isAfter(startDateTime))) {
+      var uuid = Uuid();
+      String uniqueStr = uuid.v4();
+
+      
       Event newEvent = Event(
-        title: titleController.text,
-        location: locationController.text,
-        startDate: DateFormat('dd-MM-yyyy').format(startDateTime),
-        startTime: controller.isAllDayEvent.value
-            ? DateFormat('hh:mm a').format(startDateTime)
-            : DateFormat('hh:mm a').format(startDateTime),
-        endDate: DateFormat('dd-MM-yyyy').format(endDateTime),
-        endTime: controller.isAllDayEvent.value
-            ? DateFormat('hh:mm a').format(endDateTime)
-            : DateFormat('hh:mm a').format(endDateTime),
-        isAllDayEvent: controller.isAllDayEvent.value,
-        repetitiveEvent: controller.repetitiveEvent.value,
-        selectedTag: controller.selectedTag.value,
-        notes: notesController.text,
-        color: getTagColor(controller.selectedTag.value).value,
-        planevent: 'No',
-        isCompleted: 0,
-        numberOfDays: numberOfDays,
-      );
+          title: titleController.text,
+          location: locationController.text,
+          startDate: DateFormat('dd-MM-yyyy').format(startDateTime),
+          startTime: controller.isAllDayEvent.value
+              ? DateFormat('hh:mm a').format(startDateTime)
+              : DateFormat('hh:mm a').format(startDateTime),
+          endDate: DateFormat('dd-MM-yyyy').format(endDateTime),
+          endTime: controller.isAllDayEvent.value
+              ? DateFormat('hh:mm a').format(endDateTime)
+              : DateFormat('hh:mm a').format(endDateTime),
+          isAllDayEvent: controller.isAllDayEvent.value,
+          repetitiveEvent: controller.repetitiveEvent.value,
+          selectedTag: controller.selectedTag.value,
+          notes: notesController.text,
+          color: getTagColor(controller.selectedTag.value).value,
+          planevent: 'No',
+          isCompleted: 0,
+          numberOfDays: numberOfDays,
+          uniquestr: uniqueStr);
 
       print('Event Created: ${newEvent.toMap()}');
       int value = await taskController.addEvent(newEvent);

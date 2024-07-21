@@ -16,6 +16,7 @@ class Event {
   String? planevent;
   int? isCompleted;
   int? numberOfDays;
+  String? uniquestr;
 
   Event(
       {this.id,
@@ -32,7 +33,9 @@ class Event {
       required this.color,
       required this.planevent,
       required this.isCompleted,
-      required this.numberOfDays});
+      required this.numberOfDays,
+      required this.uniquestr,
+      });
 
   Map<String, dynamic> toMap() {
     return {
@@ -51,6 +54,7 @@ class Event {
       'planevent': planevent,
       'isCompleted': isCompleted,
       'numberOfDays': numberOfDays,
+      'uniquestr': uniquestr,
     };
   }
 
@@ -71,6 +75,7 @@ class Event {
       planevent: map['planevent'],
       isCompleted: map['isCompleted'],
       numberOfDays: map['numberOfDays'],
+      uniquestr: map['uniquestr'],
     );
   }
 }
