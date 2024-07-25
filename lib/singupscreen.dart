@@ -345,7 +345,7 @@ class SignUpFooterWidget extends StatelessWidget {
                 TextSpan(
                     text: 'Login',
                     style: TextStyle(
-                        color: Colors.green, fontWeight: FontWeight.bold))
+                        color: Colors.black, fontWeight: FontWeight.bold))
               ],
             ),
           ),

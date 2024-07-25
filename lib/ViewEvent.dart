@@ -15,12 +15,12 @@ class ViewEvent extends StatefulWidget {
       : super(key: key);
 
   @override
-  _ViewEventState createState() => _ViewEventState();
+  _ViewEventScreenState createState() => _ViewEventScreenState();
 }
 
-class _ViewEventState extends State<ViewEvent> {
+class _ViewEventScreenState extends State<ViewEvent> {
+  final ThemeController themeController = Get.put(ThemeController());
   final NewTaskController task = Get.put(NewTaskController());
-  final ThemeController _themeController = Get.put(ThemeController());
 
   void _confirmDeleteEvent() {
     showDialog(
@@ -54,386 +54,394 @@ class _ViewEventState extends State<ViewEvent> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor:
-          _themeController.isDarkTheme.value ? Colors.black : Colors.white,
-      appBar: AppBar(
-        backgroundColor: widget.color,
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back),
-          color: Colors.black,
-          onPressed: () {
-            Navigator.pop(context);
-            Navigator.pushNamed(context, '/home');
-          },
-        ),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.edit),
-            color: Colors.black,
+    return Obx(() {
+      bool isDark = themeController.isDarkTheme.value;
+      return Scaffold(
+        backgroundColor: isDark ? Colors.black : Colors.white,
+        appBar: AppBar(
+          leading: IconButton(
+            icon: Icon(
+              Icons.arrow_back,
+              color: isDark ? Colors.white : Colors.black,
+            ),
             onPressed: () {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => EditEventScreen(
-                    eventId: widget.event.id!,
-                  ),
+                  builder: (context) => Homepage(),
                 ),
               );
             },
           ),
-          IconButton(
-            icon: Icon(Icons.delete),
-            color: Colors.black,
-            onPressed: _confirmDeleteEvent,
+          title: Text(
+            'View Event',
+            style: TextStyle(color: isDark ? Colors.white : Colors.black),
           ),
-        ],
-      ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildHeader(),
-              SizedBox(height: 20),
-              _buildDetailSection(
-                icon: Icons.description,
-                title: 'Notes',
-                content: widget.event.notes.toString(),
-              ),
-              _buildTimeSection(),
-              _buildDetailSection(
-                icon: Icons.calendar_today,
-                title: 'Start Date',
-                content: widget.event.startDate,
-              ),
-              _buildDetailSection(
-                icon: Icons.calendar_today,
-                title: 'End Date',
-                content: widget.event.endDate.toString(),
-              ),
-              _buildDetailSection(
-                icon: Icons.repeat,
-                title: 'Repeat',
-                content: widget.event.repetitiveEvent.toString(),
-              ),
-              _buildTimeLeftCard(),
-              const SizedBox(height: 40),
-              Center(
-                child: ElevatedButton(
-                  onPressed: () {
-                    setState(() {
-                      task.updateeventdone(widget.event);
-                      Navigator.pushNamed(context, '/home');
-                    });
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: _themeController.isDarkTheme.value
-                        ? widget.event.isCompleted == 1
-                            ? Colors.grey
-                            : Colors.white70
-                        : widget.event.isCompleted == 1
-                            ? Colors.grey
-                            : Colors.black,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30.0),
+          backgroundColor: isDark ? Color(0xFF121212) : Colors.white,
+          elevation: 0,
+          actions: [
+            if (widget.event.planevent == "No")
+              IconButton(
+                icon: Icon(Icons.edit),
+                color: isDark ? Colors.white : Colors.black,
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => EditEventScreen(
+                        event: widget.event,
+                      ),
                     ),
-                    padding: EdgeInsets.symmetric(horizontal: 40, vertical: 20),
+                  );
+                },
+              ),
+            IconButton(
+              icon: Icon(Icons.delete),
+              color: isDark ? Colors.white : Colors.black,
+              onPressed: _confirmDeleteEvent,
+            ),
+          ],
+        ),
+        body: Container(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildReadOnlyField('Title', widget.event.title, isDark),
+                  SizedBox(height: 10),
+                  _buildReadOnlyField(
+                      'Location or meeting URL', widget.event.location, isDark),
+                  SizedBox(height: 20),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text('All-Day-Repeat',
+                          style: TextStyle(
+                              color: isDark ? Colors.white : Colors.black)),
+                      Switch(
+                        value: widget.event.isAllDayEvent,
+                        onChanged: null,
+                        activeColor: Colors.teal,
+                      ),
+                    ],
                   ),
-                  child: Text(
-                    widget.event.isCompleted == 0
-                        ? "Mark as Done"
-                        : "Completed",
-                    style: TextStyle(
-                      color: _themeController.isDarkTheme.value
-                          ? Colors.black
-                          : Colors.white,
-                      fontSize: 16,
+                  if (widget.event.isAllDayEvent) ...[
+                    SizedBox(height: 10),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        Text('Start Date:',
+                            style: TextStyle(
+                                color: isDark ? Colors.white : Colors.black)),
+                        SizedBox(
+                          width: 150,
+                        ),
+                        Expanded(
+                          child: InputDecorator(
+                            decoration: InputDecoration(
+                              contentPadding: EdgeInsets.symmetric(
+                                  horizontal: 15, vertical: 5),
+                              filled: true,
+                              fillColor:
+                                  isDark ? Color(0xFF1C1C1C) : Colors.grey[200],
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                                borderSide: BorderSide.none,
+                              ),
+                              suffixIcon: Icon(Icons.arrow_drop_down,
+                                  color: isDark ? Colors.white : Colors.black),
+                            ),
+                            child: Text(
+                              DateFormat('MMM dd').format(
+                                  DateFormat('dd-MM-yyyy')
+                                      .parse(widget.event.startDate)),
+                              style: TextStyle(
+                                  color: isDark ? Colors.white : Colors.black),
+                            ),
+                          ),
+                        )
+                      ],
+                    ),
+                    SizedBox(height: 10),
+                    Row(
+                      children: [
+                        Text('End Date:',
+                            style: TextStyle(
+                                color: isDark ? Colors.white : Colors.black)),
+                        SizedBox(width: 160),
+                        Expanded(
+                          child: InputDecorator(
+                            decoration: InputDecoration(
+                              contentPadding: EdgeInsets.symmetric(
+                                  horizontal: 15, vertical: 5),
+                              filled: true,
+                              fillColor:
+                                  isDark ? Color(0xFF1C1C1C) : Colors.grey[200],
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                                borderSide: BorderSide.none,
+                              ),
+                              suffixIcon: Icon(Icons.arrow_drop_down,
+                                  color: isDark ? Colors.white : Colors.black),
+                            ),
+                            child: Text(
+                              DateFormat('MMM dd').format(
+                                  DateFormat('dd-MM-yyyy')
+                                      .parse(widget.event.endDate)),
+                              style: TextStyle(
+                                  color: isDark ? Colors.white : Colors.black),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ] else ...[
+                    SizedBox(height: 10),
+                    Row(
+                      children: [
+                        Text('Start',
+                            style: TextStyle(
+                                color: isDark ? Colors.white : Colors.black)),
+                        SizedBox(width: 80),
+                        Expanded(
+                          child: InputDecorator(
+                            decoration: InputDecoration(
+                              contentPadding: EdgeInsets.symmetric(
+                                  horizontal: 15, vertical: 5),
+                              filled: true,
+                              fillColor:
+                                  isDark ? Color(0xFF1C1C1C) : Colors.grey[200],
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                                borderSide: BorderSide.none,
+                              ),
+                              suffixIcon: Icon(Icons.arrow_drop_down,
+                                  color: isDark ? Colors.white : Colors.black),
+                            ),
+                            child: Text(
+                              DateFormat('MMM dd').format(
+                                  DateFormat('dd-MM-yyyy')
+                                      .parse(widget.event.startDate)),
+                              style: TextStyle(
+                                  color: isDark ? Colors.white : Colors.black),
+                            ),
+                          ),
+                        ),
+                        SizedBox(width: 10),
+                        Expanded(
+                          child: InputDecorator(
+                            decoration: InputDecoration(
+                              contentPadding: EdgeInsets.symmetric(
+                                  horizontal: 15, vertical: 5),
+                              filled: true,
+                              fillColor:
+                                  isDark ? Color(0xFF1C1C1C) : Colors.grey[200],
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                                borderSide: BorderSide.none,
+                              ),
+                              suffixIcon: Icon(Icons.arrow_drop_down,
+                                  color: isDark ? Colors.white : Colors.black),
+                            ),
+                            child: Text(
+                              widget.event.startTime,
+                              style: TextStyle(
+                                  color: isDark ? Colors.white : Colors.black),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 10),
+                    Row(
+                      children: [
+                        Text('End',
+                            style: TextStyle(
+                                color: isDark ? Colors.white : Colors.black)),
+                        SizedBox(width: 90),
+                        Expanded(
+                          child: InputDecorator(
+                            decoration: InputDecoration(
+                              contentPadding: EdgeInsets.symmetric(
+                                  horizontal: 15, vertical: 5),
+                              filled: true,
+                              fillColor:
+                                  isDark ? Color(0xFF1C1C1C) : Colors.grey[200],
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                                borderSide: BorderSide.none,
+                              ),
+                              suffixIcon: Icon(Icons.arrow_drop_down,
+                                  color: isDark ? Colors.white : Colors.black),
+                            ),
+                            child: Text(
+                              DateFormat('MMM dd').format(
+                                  DateFormat('dd-MM-yyyy')
+                                      .parse(widget.event.endDate)),
+                              style: TextStyle(
+                                  color: isDark ? Colors.white : Colors.black),
+                            ),
+                          ),
+                        ),
+                        SizedBox(width: 10),
+                        Expanded(
+                          child: InputDecorator(
+                            decoration: InputDecoration(
+                              contentPadding: EdgeInsets.symmetric(
+                                  horizontal: 15, vertical: 5),
+                              filled: true,
+                              fillColor:
+                                  isDark ? Color(0xFF1C1C1C) : Colors.grey[200],
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                                borderSide: BorderSide.none,
+                              ),
+                              suffixIcon: Icon(Icons.arrow_drop_down,
+                                  color: isDark ? Colors.white : Colors.black),
+                            ),
+                            child: Text(
+                              widget.event.endTime,
+                              style: TextStyle(
+                                  color: isDark ? Colors.white : Colors.black),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                  SizedBox(height: 20),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text('Repetitive event',
+                          style: TextStyle(
+                              color: isDark ? Colors.white : Colors.black)),
+                      Switch(
+                        value: widget.event.repetitiveEvent != 'None',
+                        onChanged: null,
+                        activeColor: Colors.teal,
+                      ),
+                    ],
+                  ),
+                  if (widget.event.repetitiveEvent != 'None') ...[
+                    SizedBox(height: 10),
+                    Text('Repetition:',
+                        style: TextStyle(
+                            color: isDark ? Colors.white : Colors.black)),
+                    SizedBox(height: 10),
+                    Row(
+                      children: [
+                        _buildRepetitionOption(
+                            'Daily', widget.event.repetitiveEvent, isDark),
+                        SizedBox(width: 10),
+                        _buildRepetitionOption(
+                            'Weekly', widget.event.repetitiveEvent, isDark),
+                        SizedBox(width: 10),
+                        _buildRepetitionOption(
+                            'Monthly', widget.event.repetitiveEvent, isDark),
+                      ],
+                    ),
+                  ],
+                  SizedBox(height: 20),
+                  Text('Tags:',
+                      style: TextStyle(
+                          color: isDark ? Colors.white : Colors.black)),
+                  Wrap(
+                    spacing: 10,
+                    runSpacing: 10,
+                    children: [
+                      _buildTag('Others', Color(0xFFDEDAF4), isDark),
+                      _buildTag('FITNESS', Color(0xFFFFADAD), isDark),
+                      _buildTag('ME TIME', Color(0xFFFFD6A5), isDark),
+                      _buildTag('FAMILY', Color(0xFFD9EDF8), isDark),
+                      _buildTag('FRIENDS', Color(0xFFFFDffb6), isDark),
+                      _buildTag('WORK', Color(0xFFFFADAD), isDark),
+                      _buildTag('HEALTH', Color(0xFFFFD6A5), isDark),
+                      _buildTag('TRAVEL', Color(0xFFDEDAF4), isDark),
+                      _buildTag('HOBBY', Color(0xFFFFDffb6), isDark),
+                    ],
+                  ),
+                  SizedBox(height: 20),
+                  Text('Notes:',
+                      style: TextStyle(
+                          color: isDark ? Colors.white : Colors.black)),
+                  SizedBox(height: 10),
+                  Container(
+                    width: double.infinity,
+                    padding: EdgeInsets.symmetric(horizontal: 15, vertical: 15),
+                    decoration: BoxDecoration(
+                      color: isDark ? Color(0xFF1C1C1C) : Colors.grey[200],
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Text(
+                      widget.event.notes,
+                      style: TextStyle(
+                          color: isDark ? Colors.white : Colors.black),
                     ),
                   ),
-                ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
-      ),
-    );
+      );
+    });
   }
 
-  Widget _buildHeader() {
+  Widget _buildReadOnlyField(String label, String value, bool isDark) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            Chip(
-              label: Text(
-                widget.event.selectedTag.toString(),
-                style: TextStyle(
-                  color: _themeController.isDarkTheme.value
-                      ? Colors.white
-                      : Colors.black,
-                ),
-              ),
-              backgroundColor: widget.color.withOpacity(0.2),
-            ),
-            SizedBox(width: 10),
-            if (widget.event.planevent == "Yes")
-              Chip(
-                label: Text(
-                  "PREP EVENT",
-                  style: TextStyle(
-                    color: _themeController.isDarkTheme.value
-                        ? Colors.white
-                        : Colors.black,
-                  ),
-                ),
-                backgroundColor: widget.color.withOpacity(0.2),
-              ),
-          ],
-        ),
-        SizedBox(height: 10),
-        Text(
-          widget.event.title.toString().toUpperCase(),
-          style: TextStyle(
-            fontSize: 30,
-            fontWeight: FontWeight.bold,
-            color: _themeController.isDarkTheme.value
-                ? Colors.white
-                : Colors.black,
+        Text(label,
+            style: TextStyle(color: isDark ? Colors.white : Colors.black)),
+        SizedBox(height: 5),
+        Container(
+          width: double.infinity,
+          padding: EdgeInsets.symmetric(horizontal: 15, vertical: 20),
+          decoration: BoxDecoration(
+            color: isDark ? Color(0xFF1C1C1C) : Colors.grey[200],
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Text(
+            value,
+            style: TextStyle(color: isDark ? Colors.white : Colors.black),
           ),
         ),
       ],
     );
   }
 
-  Widget _buildDetailSection({
-    required IconData icon,
-    required String title,
-    required String content,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10.0),
-      child: Row(
-        children: [
-          Icon(
-            icon,
-            color: _themeController.isDarkTheme.value
-                ? Colors.white70
-                : Colors.black54,
-          ),
-          SizedBox(width: 10),
-          Expanded(
-            child: Container(
-              padding: EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: _themeController.isDarkTheme.value
-                    ? Colors.white12
-                    : Colors.grey[200],
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: _themeController.isDarkTheme.value
-                          ? Colors.white70
-                          : Colors.black54,
-                    ),
-                  ),
-                  SizedBox(height: 5),
-                  Text(
-                    content,
-                    style: TextStyle(
-                      fontSize: 20,
-                      color: _themeController.isDarkTheme.value
-                          ? Colors.white
-                          : Colors.black,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
+  Widget _buildRepetitionOption(String label, String value, bool isDark) {
+    return GestureDetector(
+      onTap: null,
+      child: Chip(
+        label: Text(
+          label,
+          style: TextStyle(color: value == label ? Colors.white : Colors.black),
+        ),
+        backgroundColor: value == label ? Colors.black : Colors.white,
       ),
     );
   }
 
-  Widget _buildTimeSection() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10.0),
-      child: Row(
-        children: [
-          Icon(
-            Icons.access_time,
-            color: _themeController.isDarkTheme.value
-                ? Colors.white70
-                : Colors.black54,
+  Widget _buildTag(String label, Color color, bool isDark) {
+    return GestureDetector(
+      onTap: null,
+      child: Container(
+        decoration: BoxDecoration(
+          color: widget.event.selectedTag == label ? Colors.black : color,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        child: Text(
+          label,
+          style: TextStyle(
+            color:
+                widget.event.selectedTag == label ? Colors.white : Colors.black,
           ),
-          SizedBox(width: 10),
-          Expanded(
-            child: Row(
-              children: [
-                Expanded(
-                  child: Container(
-                    padding: EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: _themeController.isDarkTheme.value
-                          ? Colors.white12
-                          : Colors.grey[200],
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Start Time',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: _themeController.isDarkTheme.value
-                                ? Colors.white70
-                                : Colors.black54,
-                          ),
-                        ),
-                        SizedBox(height: 5),
-                        Text(
-                          widget.event.startTime,
-                          style: TextStyle(
-                            fontSize: 20,
-                            color: _themeController.isDarkTheme.value
-                                ? Colors.white
-                                : Colors.black,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                SizedBox(width: 10),
-                Expanded(
-                  child: Container(
-                    padding: EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: _themeController.isDarkTheme.value
-                          ? Colors.white12
-                          : Colors.grey[200],
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'End Time',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: _themeController.isDarkTheme.value
-                                ? Colors.white70
-                                : Colors.black54,
-                          ),
-                        ),
-                        SizedBox(height: 5),
-                        Text(
-                          widget.event.endTime,
-                          style: TextStyle(
-                            fontSize: 20,
-                            color: _themeController.isDarkTheme.value
-                                ? Colors.white
-                                : Colors.black,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTimeLeftCard() {
-    DateTime startDate = DateFormat('dd-MM-yyyy').parse(widget.event.startDate);
-    DateTime startTime = DateFormat('hh:mm a').parse(widget.event.startTime);
-    DateTime endDate = DateFormat('dd-MM-yyyy').parse(widget.event.endDate);
-    DateTime endTime = DateFormat('hh:mm a').parse(widget.event.endTime);
-
-    DateTime startDateTime = DateTime(
-      startDate.year,
-      startDate.month,
-      startDate.day,
-      startTime.hour,
-      startTime.minute,
-    );
-
-    DateTime endDateTime = DateTime(
-      endDate.year,
-      endDate.month,
-      endDate.day,
-      endTime.hour,
-      endTime.minute,
-    );
-
-    Duration timeLeft = endDateTime.difference(startDateTime);
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10.0),
-      child: Row(
-        children: [
-          Icon(
-            Icons.timer,
-            color: _themeController.isDarkTheme.value
-                ? Colors.white70
-                : Colors.black54,
-          ),
-          SizedBox(width: 10),
-          Expanded(
-            child: Container(
-              padding: EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: _themeController.isDarkTheme.value
-                    ? Colors.white12
-                    : Colors.grey[200],
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Duration',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: _themeController.isDarkTheme.value
-                          ? Colors.white70
-                          : Colors.black54,
-                    ),
-                  ),
-                  SizedBox(height: 5),
-                  Text(
-                    '${timeLeft.inDays}d ${timeLeft.inHours}h ${timeLeft.inMinutes % 60}m',
-                    style: TextStyle(
-                      fontSize: 20,
-                      color: _themeController.isDarkTheme.value
-                          ? Colors.white
-                          : Colors.black,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }

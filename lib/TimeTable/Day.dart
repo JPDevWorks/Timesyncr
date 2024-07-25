@@ -31,7 +31,7 @@ class DayView extends StatelessWidget {
       initialDisplayDate: startOfDay,
       todayHighlightColor:
           themeController.isDarkTheme.value ? Colors.white : Colors.black,
-      headerDateFormat: 'dd-MM-yy EEEE',
+      headerDateFormat: 'MMMM-yyyy',
       headerHeight: 52,
       headerStyle: CalendarHeaderStyle(
         backgroundColor:

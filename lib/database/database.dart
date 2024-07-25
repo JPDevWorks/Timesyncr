@@ -206,15 +206,21 @@ class Databasee {
         return true;
       }
       if (event.repetitiveEvent == 'Daily') {
-        return true;
+        if (startDate.isBefore(selectedDate)) {
+          return true;
+        }
       }
       if (event.repetitiveEvent == 'Weekly' &&
           selectedDate.weekday == startDate.weekday) {
-        return true;
+        if (startDate.isBefore(selectedDate)) {
+          return true;
+        }
       }
       if (event.repetitiveEvent == 'Monthly' &&
           selectedDate.day == startDate.day) {
-        return true;
+        if (startDate.isBefore(selectedDate)) {
+          return true;
+        }
       }
       return formattedDate == event.startDate;
     }).toList();

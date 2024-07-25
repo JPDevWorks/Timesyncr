@@ -260,7 +260,7 @@ class _LoginPageState extends State<NewLoginPage> {
                     child: Text(
                       'Register now',
                       style: TextStyle(
-                          color: Colors.redAccent,
+                          color: Colors.black,
                           fontWeight: FontWeight.bold,
                           fontSize: 18),
                     ),

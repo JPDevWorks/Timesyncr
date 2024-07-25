@@ -263,34 +263,37 @@ class _DashboardState extends State<DashBoard> {
                 children: [
                   Row(
                     children: [
-                      Text(
-                        event.startTime,
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: themeController.isDarkTheme.value
-                              ? Colors.white
-                              : Colors.black,
+                      if (!event.isAllDayEvent)
+                        Text(
+                          event.startTime,
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: themeController.isDarkTheme.value
+                                ? Colors.white
+                                : Colors.black,
+                          ),
                         ),
-                      ),
                       SizedBox(width: 10),
-                      Text(
-                        "-",
-                        style: TextStyle(
-                          color: themeController.isDarkTheme.value
-                              ? Colors.white
-                              : Colors.black,
+                      if (!event.isAllDayEvent)
+                        Text(
+                          "-",
+                          style: TextStyle(
+                            color: themeController.isDarkTheme.value
+                                ? Colors.white
+                                : Colors.black,
+                          ),
                         ),
-                      ),
                       SizedBox(width: 10),
-                      Text(
-                        event.endTime,
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: themeController.isDarkTheme.value
-                              ? Colors.white
-                              : Colors.black,
+                      if (!event.isAllDayEvent)
+                        Text(
+                          event.endTime,
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: themeController.isDarkTheme.value
+                                ? Colors.white
+                                : Colors.black,
+                          ),
                         ),
-                      ),
                     ],
                   ),
                   SizedBox(height: 3),
@@ -323,14 +326,6 @@ class _DashboardState extends State<DashBoard> {
                       SizedBox(
                         width: 5,
                       ),
-                      if (event.isAllDayEvent)
-                        Icon(
-                          Icons.star,
-                          size: 20,
-                          color: themeController.isDarkTheme.value
-                              ? Colors.red
-                              : Colors.red,
-                        ),
                     ],
                   ),
                   SizedBox(height: 6),

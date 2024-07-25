@@ -57,9 +57,9 @@ class _MonthViewState extends State<MonthView> {
   }
 
   Future<void> _fetchEventsForSelectedDay() async {
-    await widget.taskController.fetchdateEvents(_selectedDay);
+    await widget.taskController.fetcheventsbydate(_selectedDay);
     setState(() {
-      _selectedEvents = widget.taskController.dateevents;
+      _selectedEvents = widget.taskController.geteventsbydate;
     });
   }
 
@@ -241,65 +241,56 @@ class _MonthViewState extends State<MonthView> {
             ),
           ),
           const Divider(), // Add a line separator
-          Obx(() {
-            return ListView.builder(
+          ListView.builder(
               shrinkWrap: true,
               physics: NeverScrollableScrollPhysics(),
-              itemCount: widget.taskController.dateevents.length,
+              itemCount: _selectedEvents.length,
               itemBuilder: (context, index) {
-                final event = widget.taskController.dateevents[index];
+                final event = _selectedEvents[index];
                 final eventStartDate =
                     DateFormat('dd-MM-yyyy').parse(event.startDate);
                 final startTime = DateFormat('hh:mm a').parse(event.startTime);
                 final endTime = DateFormat('hh:mm a').parse(event.endTime);
                 Color color = Color(event.color);
-
-                if (eventStartDate.isBefore(_selectedDay) ||
-                    eventStartDate.isAtSameMomentAs(_selectedDay)) {
-                  return GestureDetector(
-                    onTap: () => _showBottomSheet(context, event, color),
-                    child: Container(
-                      margin: const EdgeInsets.symmetric(
-                          horizontal: 12.0, vertical: 4.0),
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          color: widget.themeController.isDarkTheme.value
-                              ? Colors.white
-                              : Colors.black,
-                        ),
-                        borderRadius: BorderRadius.circular(12.0),
+                return GestureDetector(
+                  onTap: () => _showBottomSheet(context, event, color),
+                  child: Container(
+                    margin: const EdgeInsets.symmetric(
+                        horizontal: 12.0, vertical: 4.0),
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: widget.themeController.isDarkTheme.value
+                            ? Colors.white
+                            : Colors.black,
                       ),
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 10,
-                            height: 80,
-                            decoration: BoxDecoration(
-                              color: color,
-                              borderRadius: const BorderRadius.only(
-                                topLeft: Radius.circular(12.0),
-                                bottomLeft: Radius.circular(12.0),
-                              ),
-                            ),
-                          ),
-                          Expanded(
-                            child: ListTile(
-                              title: Text('${event.title}'),
-                              subtitle: Text(
-                                'Start: ${DateFormat('hh:mm a').format(startTime)}\nEnd: ${DateFormat('hh:mm a').format(endTime)}',
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
+                      borderRadius: BorderRadius.circular(12.0),
                     ),
-                  );
-                } else {
-                  return SizedBox.shrink();
-                }
-              },
-            );
-          }),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 10,
+                          height: 80,
+                          decoration: BoxDecoration(
+                            color: color,
+                            borderRadius: const BorderRadius.only(
+                              topLeft: Radius.circular(12.0),
+                              bottomLeft: Radius.circular(12.0),
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          child: ListTile(
+                            title: Text('${event.title}'),
+                            subtitle: Text(
+                              'Start: ${DateFormat('hh:mm a').format(startTime)}\nEnd: ${DateFormat('hh:mm a').format(endTime)}',
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              })
         ],
       ),
     );

@@ -17,7 +17,7 @@ class NewEventController extends GetxController {
   var endTime = TimeOfDay.now().obs;
   var repetitiveEvent = 'None'.obs;
   var selectedTag = 'Others'.obs;
-  var selectedDays = 1.obs; // Added to track selected days for all-day event
+  var selectedDays = 1.obs;
 
   void setInitialValues(DateTime initialStartDate, TimeOfDay initialStartTime) {
     startDate.value = initialStartDate;
@@ -100,16 +100,39 @@ class _NewEventScreenState extends State<NewEventScreen> {
     }
   }
 
-  Future<int> _validateAndAddEvent(BuildContext context) async {
-    if (titleController.text.isEmpty ||
-        locationController.text.isEmpty ||
-        notesController.text.isEmpty) {
+  Event _createNewEvent(DateTime startDateTime, DateTime endDateTime) {
+    var uuid = Uuid();
+    String uniqueStr = uuid.v4();
+
+    int numberOfDays = endDateTime.difference(startDateTime).inDays;
+
+    return Event(
+      title: titleController.text,
+      location: locationController.text,
+      startDate: DateFormat('dd-MM-yyyy').format(startDateTime),
+      startTime: DateFormat('hh:mm a').format(startDateTime),
+      endDate: DateFormat('dd-MM-yyyy').format(endDateTime),
+      endTime: DateFormat('hh:mm a').format(endDateTime),
+      isAllDayEvent: controller.isAllDayEvent.value,
+      repetitiveEvent: controller.repetitiveEvent.value,
+      selectedTag: controller.selectedTag.value,
+      notes: notesController.text,
+      color: getTagColor(controller.selectedTag.value).value,
+      planevent: 'No',
+      isCompleted: 0,
+      numberOfDays: numberOfDays,
+      uniquestr: uniqueStr,
+    );
+  }
+
+  Future<void> _validateAndProceed(BuildContext context) async {
+    if (titleController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Please fill all the fields'),
         ),
       );
-      return 0;
+      return;
     }
 
     DateTime startDateTime;
@@ -120,15 +143,15 @@ class _NewEventScreenState extends State<NewEventScreen> {
         controller.startDate.value.year,
         controller.startDate.value.month,
         controller.startDate.value.day,
-        7,
+        0,
         0,
       );
       endDateTime = DateTime(
         controller.endDate.value.year,
         controller.endDate.value.month,
         controller.endDate.value.day,
-        19,
-        0,
+        23,
+        59,
       ).add(Duration(days: 1));
     } else {
       startDateTime = DateTime(
@@ -149,45 +172,84 @@ class _NewEventScreenState extends State<NewEventScreen> {
 
     DateTime now = DateTime.now();
 
-    int numberOfDays = endDateTime.difference(startDateTime).inDays;
+    if (controller.isAllDayEvent.value) {
+      if (now.day == startDateTime.day) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Please select Next onwards for All Day Events'),
+          ),
+        );
+        return;
+      }
+    }
 
     if (controller.isAllDayEvent.value ||
         (startDateTime.isAfter(now) && endDateTime.isAfter(startDateTime))) {
-      var uuid = Uuid();
-      String uniqueStr = uuid.v4();
+      Event newEvent = _createNewEvent(startDateTime, endDateTime);
 
-      
-      Event newEvent = Event(
-          title: titleController.text,
-          location: locationController.text,
-          startDate: DateFormat('dd-MM-yyyy').format(startDateTime),
-          startTime: controller.isAllDayEvent.value
-              ? DateFormat('hh:mm a').format(startDateTime)
-              : DateFormat('hh:mm a').format(startDateTime),
-          endDate: DateFormat('dd-MM-yyyy').format(endDateTime),
-          endTime: controller.isAllDayEvent.value
-              ? DateFormat('hh:mm a').format(endDateTime)
-              : DateFormat('hh:mm a').format(endDateTime),
-          isAllDayEvent: controller.isAllDayEvent.value,
-          repetitiveEvent: controller.repetitiveEvent.value,
-          selectedTag: controller.selectedTag.value,
-          notes: notesController.text,
-          color: getTagColor(controller.selectedTag.value).value,
-          planevent: 'No',
-          isCompleted: 0,
-          numberOfDays: numberOfDays,
-          uniquestr: uniqueStr);
-
-      print('Event Created: ${newEvent.toMap()}');
-      int value = await taskController.addEvent(newEvent);
-      return value;
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          bool isDark = themeController.isDarkTheme.value;
+          return AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(15.0),
+            ),
+            backgroundColor: isDark ? Color(0xFF1C1C1C) : Colors.white,
+            title: Text(
+              'Create Prep Event',
+              style: TextStyle(color: isDark ? Colors.white : Colors.black),
+            ),
+            content: Text(
+              'Would you like to create a Prep Event?',
+              style: TextStyle(color: isDark ? Colors.white : Colors.black),
+            ),
+            actions: <Widget>[
+              TextButton(
+                child: Text(
+                  'No',
+                  style: TextStyle(color: isDark ? Colors.teal : Colors.teal),
+                ),
+                onPressed: () async {
+                  int value = await taskController.addEvent(newEvent);
+                  if (value > 0) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Event Created successfully.'),
+                      ),
+                    );
+                    Navigator.pushNamed(context, '/home');
+                  }
+                },
+              ),
+              TextButton(
+                child: Text(
+                  'Yes',
+                  style: TextStyle(color: isDark ? Colors.teal : Colors.teal),
+                ),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => AddPlanEventScreen(
+                        parentEvent: newEvent,
+                        fun: "add",
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ],
+          );
+        },
+      );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Start and end times must be in the future.'),
         ),
       );
-      return 0;
     }
   }
 
@@ -263,7 +325,7 @@ class _NewEventScreenState extends State<NewEventScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('All day event',
+                      Text('All-Day-Repeat',
                           style: TextStyle(
                               color: isDark ? Colors.white : Colors.black)),
                       Obx(() => Switch(
@@ -285,68 +347,91 @@ class _NewEventScreenState extends State<NewEventScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           SizedBox(height: 10),
-                          Text('Start Date:',
-                              style: TextStyle(
-                                  color: isDark ? Colors.white : Colors.black)),
-                          SizedBox(height: 10),
-                          GestureDetector(
-                            onTap: () => _selectDate(context, true),
-                            child: InputDecorator(
-                              decoration: InputDecoration(
-                                contentPadding: EdgeInsets.symmetric(
-                                    horizontal: 15, vertical: 5),
-                                filled: true,
-                                fillColor: isDark
-                                    ? Color(0xFF1C1C1C)
-                                    : Colors.grey[200],
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                  borderSide: BorderSide.none,
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              Text('Start Date:',
+                                  style: TextStyle(
+                                      color: isDark
+                                          ? Colors.white
+                                          : Colors.black)),
+                              SizedBox(
+                                width: 150,
+                              ),
+                              Expanded(
+                                child: GestureDetector(
+                                  onTap: () => _selectDate(context, true),
+                                  child: InputDecorator(
+                                    decoration: InputDecoration(
+                                      contentPadding: EdgeInsets.symmetric(
+                                          horizontal: 15, vertical: 5),
+                                      filled: true,
+                                      fillColor: isDark
+                                          ? Color(0xFF1C1C1C)
+                                          : Colors.grey[200],
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(10),
+                                        borderSide: BorderSide.none,
+                                      ),
+                                      suffixIcon: Icon(Icons.arrow_drop_down,
+                                          color: isDark
+                                              ? Colors.white
+                                              : Colors.black),
+                                    ),
+                                    child: Text(
+                                      DateFormat('MMM dd')
+                                          .format(controller.startDate.value),
+                                      style: TextStyle(
+                                          color: isDark
+                                              ? Colors.white
+                                              : Colors.black),
+                                    ),
+                                  ),
                                 ),
-                                suffixIcon: Icon(Icons.arrow_drop_down,
-                                    color:
-                                        isDark ? Colors.white : Colors.black),
-                              ),
-                              child: Text(
-                                DateFormat('MMM dd')
-                                    .format(controller.startDate.value),
-                                style: TextStyle(
-                                    color:
-                                        isDark ? Colors.white : Colors.black),
-                              ),
-                            ),
+                              )
+                            ],
                           ),
                           SizedBox(height: 10),
-                          Text('End Date:',
-                              style: TextStyle(
-                                  color: isDark ? Colors.white : Colors.black)),
-                          SizedBox(height: 10),
-                          GestureDetector(
-                            onTap: () => _selectDate(context, false),
-                            child: InputDecorator(
-                              decoration: InputDecoration(
-                                contentPadding: EdgeInsets.symmetric(
-                                    horizontal: 15, vertical: 5),
-                                filled: true,
-                                fillColor: isDark
-                                    ? Color(0xFF1C1C1C)
-                                    : Colors.grey[200],
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                  borderSide: BorderSide.none,
+                          Row(
+                            children: [
+                              Text('End Date:',
+                                  style: TextStyle(
+                                      color: isDark
+                                          ? Colors.white
+                                          : Colors.black)),
+                              SizedBox(width: 160),
+                              Expanded(
+                                child: GestureDetector(
+                                  onTap: () => _selectDate(context, false),
+                                  child: InputDecorator(
+                                    decoration: InputDecoration(
+                                      contentPadding: EdgeInsets.symmetric(
+                                          horizontal: 15, vertical: 5),
+                                      filled: true,
+                                      fillColor: isDark
+                                          ? Color(0xFF1C1C1C)
+                                          : Colors.grey[200],
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(10),
+                                        borderSide: BorderSide.none,
+                                      ),
+                                      suffixIcon: Icon(Icons.arrow_drop_down,
+                                          color: isDark
+                                              ? Colors.white
+                                              : Colors.black),
+                                    ),
+                                    child: Text(
+                                      DateFormat('MMM dd')
+                                          .format(controller.endDate.value),
+                                      style: TextStyle(
+                                          color: isDark
+                                              ? Colors.white
+                                              : Colors.black),
+                                    ),
+                                  ),
                                 ),
-                                suffixIcon: Icon(Icons.arrow_drop_down,
-                                    color:
-                                        isDark ? Colors.white : Colors.black),
                               ),
-                              child: Text(
-                                DateFormat('MMM dd')
-                                    .format(controller.endDate.value),
-                                style: TextStyle(
-                                    color:
-                                        isDark ? Colors.white : Colors.black),
-                              ),
-                            ),
+                            ],
                           ),
                         ],
                       );
@@ -601,88 +686,7 @@ class _NewEventScreenState extends State<NewEventScreen> {
                     children: [
                       ElevatedButton(
                         onPressed: () async {
-                          int eventId = await _validateAndAddEvent(context);
-                          if (controller.isAllDayEvent.value) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('Event Added successfully.'),
-                              ),
-                            );
-                            Navigator.pushNamed(context, '/home');
-                          } else {
-                            if (eventId > 0) {
-                              showDialog(
-                                context: context,
-                                builder: (BuildContext context) {
-                                  bool isDark =
-                                      themeController.isDarkTheme.value;
-                                  return AlertDialog(
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(15.0),
-                                    ),
-                                    backgroundColor: isDark
-                                        ? Color(0xFF1C1C1C)
-                                        : Colors.white,
-                                    title: Text(
-                                      'Create Prep Event',
-                                      style: TextStyle(
-                                          color: isDark
-                                              ? Colors.white
-                                              : Colors.black),
-                                    ),
-                                    content: Text(
-                                      'Would you like to create a Prep Event?',
-                                      style: TextStyle(
-                                          color: isDark
-                                              ? Colors.white
-                                              : Colors.black),
-                                    ),
-                                    actions: <Widget>[
-                                      TextButton(
-                                        child: Text(
-                                          'No',
-                                          style: TextStyle(
-                                              color: isDark
-                                                  ? Colors.teal
-                                                  : Colors.teal),
-                                        ),
-                                        onPressed: () {
-                                          ScaffoldMessenger.of(context)
-                                              .showSnackBar(
-                                            SnackBar(
-                                              content: Text(
-                                                  'Event Created successfully.'),
-                                            ),
-                                          );
-                                          Navigator.pushNamed(context, '/home');
-                                        },
-                                      ),
-                                      TextButton(
-                                        child: Text(
-                                          'Yes',
-                                          style: TextStyle(
-                                              color: isDark
-                                                  ? Colors.teal
-                                                  : Colors.teal),
-                                        ),
-                                        onPressed: () {
-                                          Navigator.of(context).pop();
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (context) =>
-                                                  AddPlanEventScreen(
-                                                      eventId: eventId),
-                                            ),
-                                          );
-                                        },
-                                      ),
-                                    ],
-                                  );
-                                },
-                              );
-                            }
-                          }
+                          await _validateAndProceed(context);
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: isDark ? Colors.white : Colors.black,

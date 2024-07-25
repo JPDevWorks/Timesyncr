@@ -5,11 +5,11 @@ import 'package:timesyncr/Addevent.dart';
 import 'package:timesyncr/controller/newtask_controller.dart';
 import 'package:timesyncr/models/NewEvent.dart';
 import 'package:timesyncr/them_controler.dart';
-import 'package:uuid/uuid.dart';
 
 class AddPlanEventScreen extends StatefulWidget {
-  final int eventId;
-  AddPlanEventScreen({required this.eventId});
+  final Event parentEvent;
+  final String fun;
+  AddPlanEventScreen({required this.parentEvent, required this.fun});
 
   @override
   _AddPlanEventScreenState createState() => _AddPlanEventScreenState();
@@ -18,48 +18,84 @@ class AddPlanEventScreen extends StatefulWidget {
 class _AddPlanEventScreenState extends State<AddPlanEventScreen> {
   final NewTaskController taskController = Get.find<NewTaskController>();
   final NewEventController controller = Get.put(NewEventController());
-  late Future<Event> futureEvent;
+  late Event parentevent;
+  late Event futureEvent;
 
   @override
   void initState() {
     super.initState();
-    futureEvent = _fetchEventDetails();
+    parentevent = widget.parentEvent;
+    futureEvent = widget.parentEvent;
   }
 
-  Future<Event> _fetchEventDetails() async {
-    Event fetchedEvent = await taskController.getEventsByIdonly(widget.eventId);
-    controller.setInitialValues(
-      DateFormat('dd-MM-yyyy').parse(fetchedEvent.startDate),
-      TimeOfDay.fromDateTime(
-          DateFormat('hh:mm a').parse(fetchedEvent.startTime)),
-    );
-    return fetchedEvent;
+  Color getTagColor(String tag) {
+    switch (tag) {
+      case 'Others':
+        return Color(0xFFDEDAF4);
+      case 'FITNESS':
+        return Color(0xFFFFADAD);
+      case 'ME TIME':
+        return Color(0xFFFFD6A5);
+      case 'FAMILY':
+        return Color(0xFFD9EDF8);
+      case 'FRIENDS':
+        return Color(0xFFFFDffb6);
+      case 'WORK':
+        return Color(0xFFFFADAD);
+      case 'HEALTH':
+        return Color(0xFFFFD6A5);
+      case 'TRAVEL':
+        return Color(0xFFDEDAF4);
+      case 'HOBBY':
+        return Color(0xFFFFDffb6);
+      default:
+        return Colors.grey;
+    }
   }
 
   Future<void> _addPlanEvent(BuildContext context, Event event) async {
-    var uuid = Uuid();
-    String uniqueStr = uuid.v4();
-    DateTime startDateTime = DateTime(
-      controller.startDate.value.year,
-      controller.startDate.value.month,
-      controller.startDate.value.day,
-      controller.startTime.value.hour,
-      controller.startTime.value.minute,
-    );
+    DateTime startDateTime;
+    DateTime endDateTime;
 
-    DateTime endDateTime = DateTime(
-      controller.endDate.value.year,
-      controller.endDate.value.month,
-      controller.endDate.value.day,
-      controller.endTime.value.hour,
-      controller.endTime.value.minute,
-    );
+    if (controller.isAllDayEvent.value) {
+      startDateTime = DateTime(
+        controller.startDate.value.year,
+        controller.startDate.value.month,
+        controller.startDate.value.day,
+        0,
+        0,
+      );
+      endDateTime = DateTime(
+        controller.endDate.value.year,
+        controller.endDate.value.month,
+        controller.endDate.value.day,
+        23,
+        59,
+      );
+    } else {
+      startDateTime = DateTime(
+        controller.startDate.value.year,
+        controller.startDate.value.month,
+        controller.startDate.value.day,
+        controller.startTime.value.hour,
+        controller.startTime.value.minute,
+      );
+
+      endDateTime = DateTime(
+        controller.endDate.value.year,
+        controller.endDate.value.month,
+        controller.endDate.value.day,
+        controller.endTime.value.hour,
+        controller.endTime.value.minute,
+      );
+    }
 
     DateTime eventStartDateTime = DateFormat('dd-MM-yyyy hh:mm a')
         .parse('${event.startDate} ${event.startTime}');
     DateTime eventEndDateTime = DateFormat('dd-MM-yyyy hh:mm a')
         .parse('${event.endDate} ${event.endTime}');
 
+    // Ensure endDateTime is after startDateTime
     if (endDateTime.isBefore(startDateTime)) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -69,30 +105,52 @@ class _AddPlanEventScreenState extends State<AddPlanEventScreen> {
       return;
     }
 
-    if ((startDateTime.isBefore(eventStartDateTime) &&
-            endDateTime.isAfter(eventStartDateTime)) ||
-        (startDateTime.isBefore(eventEndDateTime) &&
-            endDateTime.isAfter(eventEndDateTime))) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Event times overlap with existing event.'),
-        ),
-      );
-      return;
+    if (!parentevent.isAllDayEvent) {
+      // Ensure startDateTime and endDateTime are before the main event times
+      if (startDateTime.isAfter(eventStartDateTime) ||
+          endDateTime.isAfter(eventStartDateTime)) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content:
+                Text('Plan event times must be before the main event times.'),
+          ),
+        );
+        return;
+      }
     }
 
-    event.startDate = DateFormat('dd-MM-yyyy').format(startDateTime);
-    event.startTime = DateFormat('hh:mm a').format(startDateTime);
-    event.endDate = DateFormat('dd-MM-yyyy').format(endDateTime);
-    event.endTime = DateFormat('hh:mm a').format(endDateTime);
-    event.planevent = "Yes";
-    event.uniquestr = uniqueStr;
-    event.id = null;
-    await taskController.addEvent(event);
+    int numberOfDays = endDateTime.difference(startDateTime).inDays;
+
+    futureEvent = Event(
+      title: futureEvent.title,
+      location: futureEvent.location,
+      notes: futureEvent.notes,
+      startDate: DateFormat('dd-MM-yyyy').format(startDateTime),
+      startTime: DateFormat('hh:mm a').format(startDateTime),
+      endDate: DateFormat('dd-MM-yyyy').format(endDateTime),
+      endTime: DateFormat('hh:mm a').format(endDateTime),
+      planevent: "Yes",
+      uniquestr: futureEvent.uniquestr,
+      id: null,
+      isAllDayEvent: controller.isAllDayEvent.value,
+      repetitiveEvent: controller.repetitiveEvent.value,
+      selectedTag: controller.selectedTag.value,
+      color: getTagColor(controller.selectedTag.value).value,
+      isCompleted: 0,
+      numberOfDays: numberOfDays,
+    );
+
+    if (widget.fun == "add") {
+      await taskController.addEvent(parentevent);
+      await taskController.addEvent(futureEvent);
+    } else {
+      await taskController.updateEvent(parentevent);
+      await taskController.addEvent(futureEvent);
+    }
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Prep Event added successfully.'),
+        content: Text('Events added successfully.'),
       ),
     );
 
@@ -123,65 +181,49 @@ class _AddPlanEventScreenState extends State<AddPlanEventScreen> {
         backgroundColor: isDark ? Color(0xFF121212) : Colors.white,
         elevation: 0,
       ),
-      body: FutureBuilder<Event>(
-        future: futureEvent,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(child: Text('Error loading event details'));
-          } else if (!snapshot.hasData) {
-            return Center(child: Text('Event not found'));
-          } else {
-            Event event = snapshot.data!;
-            return Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildUneditableField('Title', event.title, isDark),
-                    SizedBox(height: 10),
-                    _buildUneditableField(
-                        'Location or meeting URL', event.location, isDark),
-                    SizedBox(height: 20),
-                    _buildEditableFields(isDark),
-                    SizedBox(height: 20),
-                    _buildUneditableField('Notes', event.notes, isDark),
-                    SizedBox(height: 20),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        ElevatedButton(
-                          onPressed: () {
-                            _addPlanEvent(context, event);
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor:
-                                isDark ? Colors.white : Colors.black,
-                            disabledBackgroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            padding: EdgeInsets.symmetric(
-                                horizontal: 30, vertical: 15),
-                          ),
-                          child: Center(
-                            child: Text('Add Prep Event',
-                                style: TextStyle(
-                                    fontSize: 18,
-                                    color:
-                                        isDark ? Colors.black : Colors.white)),
-                          ),
-                        ),
-                      ],
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildUneditableField('Title', futureEvent.title, isDark),
+              SizedBox(height: 10),
+              _buildUneditableField(
+                  'Location or meeting URL', futureEvent.location, isDark),
+              SizedBox(height: 20),
+              _buildEditableFields(isDark),
+              SizedBox(height: 20),
+              _buildUneditableField('Notes', futureEvent.notes, isDark),
+              SizedBox(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  ElevatedButton(
+                    onPressed: () {
+                      _addPlanEvent(context, futureEvent);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: isDark ? Colors.white : Colors.black,
+                      disabledBackgroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 30, vertical: 15),
                     ),
-                  ],
-                ),
+                    child: Center(
+                      child: Text('Add Prep Event',
+                          style: TextStyle(
+                              fontSize: 18,
+                              color: isDark ? Colors.black : Colors.white)),
+                    ),
+                  ),
+                ],
               ),
-            );
-          }
-        },
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -207,209 +249,317 @@ class _AddPlanEventScreenState extends State<AddPlanEventScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Row(
-        //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        //   children: [
-        //     Text('All day event',
-        //         style: TextStyle(color: isDark ? Colors.white : Colors.black)),
-        //     Obx(() => Switch(
-        //           value: controller.isAllDayEvent.value,
-        //           onChanged: (value) {
-        //             controller.isAllDayEvent.value = value;
-        //           },
-        //           activeColor: Colors.teal,
-        //         )),
-        //   ],
-        // ),
         Obx(() {
-          if (!controller.isAllDayEvent.value) {
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SizedBox(height: 10),
-                Row(
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('All-Day-Repeat',
+                      style: TextStyle(
+                          color: isDark ? Colors.white : Colors.black)),
+                  Obx(() => Switch(
+                        value: controller.isAllDayEvent.value,
+                        onChanged: (value) {
+                          controller.isAllDayEvent.value = value;
+                          if (!value) {
+                            controller.repetitiveEvent.value = 'None';
+                          }
+                        },
+                        activeColor: Colors.teal,
+                      )),
+                ],
+              ),
+              if (controller.isAllDayEvent.value)
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Start',
+                    SizedBox(height: 10),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        Text('Start Date:',
+                            style: TextStyle(
+                                color: isDark ? Colors.white : Colors.black)),
+                        SizedBox(
+                          width: 150,
+                        ),
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () => _selectDate(context, true),
+                            child: InputDecorator(
+                              decoration: InputDecoration(
+                                contentPadding: EdgeInsets.symmetric(
+                                    horizontal: 15, vertical: 5),
+                                filled: true,
+                                fillColor: isDark
+                                    ? Color(0xFF1C1C1C)
+                                    : Colors.grey[200],
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                  borderSide: BorderSide.none,
+                                ),
+                                suffixIcon: Icon(Icons.arrow_drop_down,
+                                    color:
+                                        isDark ? Colors.white : Colors.black),
+                              ),
+                              child: Text(
+                                DateFormat('MMM dd')
+                                    .format(controller.startDate.value),
+                                style: TextStyle(
+                                    color:
+                                        isDark ? Colors.white : Colors.black),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 10),
+                    Row(
+                      children: [
+                        Text('End Date:',
+                            style: TextStyle(
+                                color: isDark ? Colors.white : Colors.black)),
+                        SizedBox(width: 160),
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () => _selectDate(context, false),
+                            child: InputDecorator(
+                              decoration: InputDecoration(
+                                contentPadding: EdgeInsets.symmetric(
+                                    horizontal: 15, vertical: 5),
+                                filled: true,
+                                fillColor: isDark
+                                    ? Color(0xFF1C1C1C)
+                                    : Colors.grey[200],
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                  borderSide: BorderSide.none,
+                                ),
+                                suffixIcon: Icon(Icons.arrow_drop_down,
+                                    color:
+                                        isDark ? Colors.white : Colors.black),
+                              ),
+                              child: Text(
+                                DateFormat('MMM dd')
+                                    .format(controller.endDate.value),
+                                style: TextStyle(
+                                    color:
+                                        isDark ? Colors.white : Colors.black),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                )
+              else
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(height: 10),
+                    Row(
+                      children: [
+                        Text('Start',
+                            style: TextStyle(
+                                color: isDark ? Colors.white : Colors.black)),
+                        SizedBox(width: 80),
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () => _selectDate(context, true),
+                            child: InputDecorator(
+                              decoration: InputDecoration(
+                                contentPadding: EdgeInsets.symmetric(
+                                    horizontal: 15, vertical: 5),
+                                filled: true,
+                                fillColor: isDark
+                                    ? Color(0xFF1C1C1C)
+                                    : Colors.grey[200],
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                  borderSide: BorderSide.none,
+                                ),
+                                suffixIcon: Icon(Icons.arrow_drop_down,
+                                    color:
+                                        isDark ? Colors.white : Colors.black),
+                              ),
+                              child: Text(
+                                DateFormat('MMM dd')
+                                    .format(controller.startDate.value),
+                                style: TextStyle(
+                                    color:
+                                        isDark ? Colors.white : Colors.black),
+                              ),
+                            ),
+                          ),
+                        ),
+                        SizedBox(width: 10),
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () => _selectTime(context, true),
+                            child: InputDecorator(
+                              decoration: InputDecoration(
+                                contentPadding: EdgeInsets.symmetric(
+                                    horizontal: 15, vertical: 5),
+                                filled: true,
+                                fillColor: isDark
+                                    ? Color(0xFF1C1C1C)
+                                    : Colors.grey[200],
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                  borderSide: BorderSide.none,
+                                ),
+                                suffixIcon: Icon(Icons.arrow_drop_down,
+                                    color:
+                                        isDark ? Colors.white : Colors.black),
+                              ),
+                              child: Text(
+                                controller.startTime.value.format(context),
+                                style: TextStyle(
+                                    color:
+                                        isDark ? Colors.white : Colors.black),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 10),
+                    Row(
+                      children: [
+                        Text('End',
+                            style: TextStyle(
+                                color: isDark ? Colors.white : Colors.black)),
+                        SizedBox(width: 90),
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () => _selectDate(context, false),
+                            child: InputDecorator(
+                              decoration: InputDecoration(
+                                contentPadding: EdgeInsets.symmetric(
+                                    horizontal: 15, vertical: 5),
+                                filled: true,
+                                fillColor: isDark
+                                    ? Color(0xFF1C1C1C)
+                                    : Colors.grey[200],
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                  borderSide: BorderSide.none,
+                                ),
+                                suffixIcon: Icon(Icons.arrow_drop_down,
+                                    color:
+                                        isDark ? Colors.white : Colors.black),
+                              ),
+                              child: Text(
+                                DateFormat('MMM dd')
+                                    .format(controller.endDate.value),
+                                style: TextStyle(
+                                    color:
+                                        isDark ? Colors.white : Colors.black),
+                              ),
+                            ),
+                          ),
+                        ),
+                        SizedBox(width: 10),
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () => _selectTime(context, false),
+                            child: InputDecorator(
+                              decoration: InputDecoration(
+                                contentPadding: EdgeInsets.symmetric(
+                                    horizontal: 15, vertical: 5),
+                                filled: true,
+                                fillColor: isDark
+                                    ? Color(0xFF1C1C1C)
+                                    : Colors.grey[200],
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                  borderSide: BorderSide.none,
+                                ),
+                                suffixIcon: Icon(Icons.arrow_drop_down,
+                                    color:
+                                        isDark ? Colors.white : Colors.black),
+                              ),
+                              child: Text(
+                                controller.endTime.value.format(context),
+                                style: TextStyle(
+                                    color:
+                                        isDark ? Colors.white : Colors.black),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              SizedBox(height: 20),
+              if (!controller.isAllDayEvent.value)
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('Repetitive event',
                         style: TextStyle(
                             color: isDark ? Colors.white : Colors.black)),
-                    SizedBox(width: 80),
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: () => _selectDate(context, true),
-                        child: InputDecorator(
-                          decoration: InputDecoration(
-                            contentPadding: EdgeInsets.symmetric(
-                                horizontal: 15, vertical: 5),
-                            filled: true,
-                            fillColor:
-                                isDark ? Color(0xFF1C1C1C) : Colors.grey[200],
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                              borderSide: BorderSide.none,
-                            ),
-                            suffixIcon: Icon(Icons.arrow_drop_down,
-                                color: isDark ? Colors.white : Colors.black),
-                          ),
-                          child: Text(
-                            DateFormat('MMM dd')
-                                .format(controller.startDate.value),
-                            style: TextStyle(
-                                color: isDark ? Colors.white : Colors.black),
-                          ),
-                        ),
-                      ),
-                    ),
-                    SizedBox(width: 10),
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: () => _selectTime(context, true),
-                        child: InputDecorator(
-                          decoration: InputDecoration(
-                            contentPadding: EdgeInsets.symmetric(
-                                horizontal: 15, vertical: 5),
-                            filled: true,
-                            fillColor:
-                                isDark ? Color(0xFF1C1C1C) : Colors.grey[200],
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                              borderSide: BorderSide.none,
-                            ),
-                            suffixIcon: Icon(Icons.arrow_drop_down,
-                                color: isDark ? Colors.white : Colors.black),
-                          ),
-                          child: Text(
-                            controller.startTime.value.format(context),
-                            style: TextStyle(
-                                color: isDark ? Colors.white : Colors.black),
-                          ),
-                        ),
-                      ),
-                    ),
+                    Obx(() => Switch(
+                          value: controller.isRepetitiveEvent.value,
+                          onChanged: (value) {
+                            controller.isRepetitiveEvent.value = value;
+                          },
+                          activeColor: Colors.teal,
+                        )),
                   ],
                 ),
-                SizedBox(height: 10),
-                Row(
-                  children: [
-                    Text('End',
-                        style: TextStyle(
-                            color: isDark ? Colors.white : Colors.black)),
-                    SizedBox(width: 90),
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: () => _selectDate(context, false),
-                        child: InputDecorator(
-                          decoration: InputDecoration(
-                            contentPadding: EdgeInsets.symmetric(
-                                horizontal: 15, vertical: 5),
-                            filled: true,
-                            fillColor:
-                                isDark ? Color(0xFF1C1C1C) : Colors.grey[200],
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                              borderSide: BorderSide.none,
-                            ),
-                            suffixIcon: Icon(Icons.arrow_drop_down,
-                                color: isDark ? Colors.white : Colors.black),
-                          ),
-                          child: Text(
-                            DateFormat('MMM dd')
-                                .format(controller.endDate.value),
-                            style: TextStyle(
-                                color: isDark ? Colors.white : Colors.black),
-                          ),
-                        ),
+              Obx(() {
+                if (controller.isRepetitiveEvent.value &&
+                    !controller.isAllDayEvent.value) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SizedBox(height: 10),
+                      Text('Repetition:',
+                          style: TextStyle(
+                              color: isDark ? Colors.white : Colors.black)),
+                      SizedBox(height: 10),
+                      Row(
+                        children: [
+                          _buildRepetitionOption('Daily'),
+                          SizedBox(width: 10),
+                          _buildRepetitionOption('Weekly'),
+                          SizedBox(width: 10),
+                          _buildRepetitionOption('Monthly'),
+                        ],
                       ),
-                    ),
-                    SizedBox(width: 10),
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: () => _selectTime(context, false),
-                        child: InputDecorator(
-                          decoration: InputDecoration(
-                            contentPadding: EdgeInsets.symmetric(
-                                horizontal: 15, vertical: 5),
-                            filled: true,
-                            fillColor:
-                                isDark ? Color(0xFF1C1C1C) : Colors.grey[200],
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                              borderSide: BorderSide.none,
-                            ),
-                            suffixIcon: Icon(Icons.arrow_drop_down,
-                                color: isDark ? Colors.white : Colors.black),
-                          ),
-                          child: Text(
-                            controller.endTime.value.format(context),
-                            style: TextStyle(
-                                color: isDark ? Colors.white : Colors.black),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            );
-          }
-          return SizedBox.shrink();
+                    ],
+                  );
+                }
+                return SizedBox.shrink();
+              }),
+              SizedBox(height: 20),
+              Text('Tags:',
+                  style:
+                      TextStyle(color: isDark ? Colors.white : Colors.black)),
+              Wrap(
+                spacing: 10,
+                runSpacing: 10,
+                children: [
+                  _buildTag('Others', Color(0xFFD9EDF8)),
+                  _buildTag('FITNESS', Color(0xFFFFADAD)),
+                  _buildTag('ME TIME', Color(0xFFFFD6A5)),
+                  _buildTag('FAMILY', Color(0xFFD9EDF8)),
+                  _buildTag('FRIENDS', Color(0xFFFFDffb6)),
+                  _buildTag('WORK', Color(0xFFDEDAF4)),
+                  _buildTag('HEALTH', Color(0xFFFFD6A5)),
+                  _buildTag('TRAVEL', Color(0xFFE4F1EE)),
+                  _buildTag('HOBBY', Color(0xFFFFDffb6)),
+                ],
+              ),
+            ],
+          );
         }),
-        SizedBox(height: 20),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text('Repetitive event',
-                style: TextStyle(color: isDark ? Colors.white : Colors.black)),
-            Obx(() => Switch(
-                  value: controller.isRepetitiveEvent.value,
-                  onChanged: (value) {
-                    controller.isRepetitiveEvent.value = value;
-                  },
-                  activeColor: Colors.teal,
-                )),
-          ],
-        ),
-        Obx(() {
-          if (controller.isRepetitiveEvent.value) {
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SizedBox(height: 10),
-                Text('Repetition:',
-                    style:
-                        TextStyle(color: isDark ? Colors.white : Colors.black)),
-                SizedBox(height: 10),
-                Row(
-                  children: [
-                    _buildRepetitionOption('Daily'),
-                    SizedBox(width: 10),
-                    _buildRepetitionOption('Weekly'),
-                    SizedBox(width: 10),
-                    _buildRepetitionOption('Monthly'),
-                  ],
-                ),
-              ],
-            );
-          }
-          return SizedBox.shrink();
-        }),
-        SizedBox(height: 20),
-        Text('Tags:',
-            style: TextStyle(color: isDark ? Colors.white : Colors.black)),
-        Wrap(
-          spacing: 10,
-          runSpacing: 10,
-          children: [
-            _buildTag('Others', Color(0xFFD9EDF8)),
-            _buildTag('FITNESS', Color(0xFFFFADAD)),
-            _buildTag('ME TIME', Color(0xFFFFD6A5)),
-            _buildTag('FAMILY', Color(0xFFD9EDF8)),
-            _buildTag('FRIENDS', Color(0xFFFFDffb6)),
-            _buildTag('WORK', Color(0xFFDEDAF4)),
-            _buildTag('HEALTH', Color(0xFFFFD6A5)),
-            _buildTag('TRAVEL', Color(0xFFE4F1EE)),
-            _buildTag('HOBBY', Color(0xFFFFDffb6)),
-          ],
-        ),
       ],
     );
   }

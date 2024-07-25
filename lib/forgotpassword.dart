@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:timesyncr/Formheader.dart'; // Import FormHeaderWidget
+import 'package:timesyncr/Formheader.dart';
+import 'package:timesyncr/loginnew.dart'; // Import FormHeaderWidget
 
 class ForgetPasswordScreen extends StatefulWidget {
   const ForgetPasswordScreen({Key? key}) : super(key: key);
@@ -47,15 +48,26 @@ class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
-        body: Center(  // Use Center to vertically center the Column
+        appBar: AppBar(
+          leading: IconButton(
+            icon: Icon(Icons.arrow_back, color: Colors.black),
+            onPressed: () => Navigator.pushNamed(context, '/login'),
+          ),
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+        ),
+        body: Center(
+          // Use Center to vertically center the Column
           child: SingleChildScrollView(
             child: Container(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.all(14.0),
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,  // Center items in the Column
+                mainAxisAlignment:
+                    MainAxisAlignment.center, // Center items in the Column
                 children: [
                   const FormHeaderWidget(
-                    image: 'assets/login_lc.png', // Update with the actual image path
+                    image:
+                        'assets/login_lc.png', // Update with the actual image path
                     title: 'Forgot Password',
                     subTitle: 'Enter your email to reset your password',
                     imageHeight: 0.15,
@@ -84,7 +96,8 @@ class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
                               if (value == null || value.isEmpty) {
                                 return 'Please Enter Email';
                               }
-                              final emailRegExp = RegExp(r'^[^@]+@[^@]+\.[^@]+');
+                              final emailRegExp =
+                                  RegExp(r'^[^@]+@[^@]+\.[^@]+');
                               if (!emailRegExp.hasMatch(value)) {
                                 return 'Please enter a valid email address';
                               }
